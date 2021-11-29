@@ -125,6 +125,11 @@ bool ClamBCAnalyzer::runOnModule(Module &M)
         std::set<ConstantExpr *> ces;
         getDependentValues(gv, insts, globs, ces);
 
+        /*It is necessary to add these twice, because there is a condition we
+         * can't use global idx 0 or 1 in the interpreter, since the size will
+         * be incorrect in the interpreter.  Look at line 2011 of bytecode.c
+         */
+        for (size_t loop = 0; loop < 2; loop++){
         for (auto J : ces) {
             ConstantExpr *CE = llvm::cast<ConstantExpr>(J);
             // ClamAV bytecode doesn't support arbitrary constant expressions for
@@ -180,6 +185,7 @@ bool ClamBCAnalyzer::runOnModule(Module &M)
                                                     CE,
                                                     I->getName() + "_" + Twine(v));
             CEMap[CE]          = GV;
+        }
         }
 
         // Collect types of all globals.
