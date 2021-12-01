@@ -94,12 +94,15 @@ class ClangLLVM():
 
         if optVersion == -1:
             print("error: unable to get version information for opt", file=sys.stderr)
+            return False
 
         if optVersion != clangVersion:
             print("error: versions of opt and clang must match", file=sys.stderr)
+            return False
 
         if optVersion != llvmLinkVersion:
             print("error: versions of opt and llvm-link must match", file=sys.stderr)
+            return False
 
         return True
 
@@ -616,7 +619,7 @@ def fixFileSize(optimizedFile) :
 def findVersion(progName):
     ret = -1
     try :
-        sp = subprocess.Popen([progName, "-v"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        sp = subprocess.Popen([progName, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         err = sp.communicate()
         m = re.search("version\s*([0-9]*)\.", str(err))
         if m:
