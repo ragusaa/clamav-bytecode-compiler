@@ -128,8 +128,10 @@ class ClamBCExtendPHIsTo64Bit : public ModulePass
     virtual bool runOnModule(Module &m)
     {
 
+#if 0
         DEBUGERR << "REMOVED THIS!!!" << "<END>\n";
         return false;
+#endif
 
         pMod = &m;
 
