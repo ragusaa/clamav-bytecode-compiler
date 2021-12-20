@@ -227,7 +227,9 @@ class ClamBCRemoveUndefs : public ModulePass
     {
         pMod = &m;
 
+#if 0
         DEBUGERR << "REMOVED THIS!!!<END>\n"; return false;
+#endif
 
         for (auto i = pMod->begin(), e = pMod->end(); i != e; i++) {
             Function *pFunc = llvm::cast<Function>(i);
