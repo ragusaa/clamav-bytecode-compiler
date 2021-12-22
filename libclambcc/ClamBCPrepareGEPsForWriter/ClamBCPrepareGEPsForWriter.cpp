@@ -87,6 +87,7 @@ class ClamBCPrepareGEPsForWriter : public ModulePass
 
     virtual int64_t getTypeSize(Type *pt)
     {
+
         int64_t size = pt->getScalarSizeInBits();
         if (size) {
             return size;
@@ -121,15 +122,27 @@ class ClamBCPrepareGEPsForWriter : public ModulePass
         assert((llvm::isa<StructType>(pt) || llvm::isa<ArrayType>(pt)) && "pt must be a complex type");
 
         if (StructType *pst = llvm::dyn_cast<StructType>(pt)) {
-            assert((idx <= pst->getNumElements()) && "Idx too high");
+#if 0
+            DEBUGERR << "HIT THE ASSERT (STRUCT)" << "<END>\n";
+            cnt = 0;
+#else
+            assert((idx <= pst->getNumElements()) && "Idx too high (struct type)");
 
             const StructLayout *psl = pMod->getDataLayout().getStructLayout(pst);
             assert(psl && "Could not get layout");
 
             cnt = psl->getElementOffsetInBits(idx) / 8;
+#endif
 
         } else if (ArrayType *pat = llvm::dyn_cast<ArrayType>(pt)) {
-            assert((idx <= pat->getNumElements()) && "Idx too high");
+
+            if (idx > pat->getNumElements()){
+                DEBUGERR << "HIT THE ASSERT" << "<END>\n";
+                DEBUGERR << "array type = '" << *pat << "'<END>\n";
+                DEBUGERR << "idx = '" << idx << "'<END>\n";
+            }
+
+            assert((idx <= pat->getNumElements()) && "Idx too high (array type)");
             cnt = idx * getTypeSizeInBytes(pat->getElementType());
         }
 
@@ -187,14 +200,33 @@ class ClamBCPrepareGEPsForWriter : public ModulePass
 
         Type *currType = gepiDstType;
 
+
+        llvm::errs() << "\n";
+        llvm::errs() << "\n";
+        llvm::errs() << "\n";
+
+        DEBUGERR << "BEFORE FOR::" << *pgepi << "<END>\n";
+        DEBUGERR << "BEFORE FOR::" << *pbci << "<END>\n";
+        DEBUGERR << "BEFORE FOR::" << *underlyingObject << "<END>\n";
+        DEBUGERR << "BEFORE FOR::" << *gepiDstType << "<END>\n"; 
+        DEBUGERR << "FOUND IT = " << ("clambcRebuildInboundsGEP35"== pgepi->getName()) << "<END>\n";
+
         for (auto e = pgepi->idx_end(); i != e; i++) {
             Value *vIdx = llvm::cast<Value>(i);
+
+            DEBUGERR << "vIdx = " << *vIdx << "<END>\n";
 
             Value *ciAddend = nullptr;
             if (ConstantInt *ciIdx = llvm::dyn_cast<ConstantInt>(vIdx)) {
 
+                DEBUGERR << *currType << "<END>\n";
+                DEBUGERR << *ciIdx << "<END>\n";
+//                DEBUGERR << "calling computeOffsetInBytes::" << *pgepi << "::" << "<END>\n";
                 uint64_t val = computeOffsetInBytes(currType, ciIdx);
+//                DEBUGERR << "after computeOffsetInBytes" << "<END>\n";
                 ciAddend     = ConstantInt::get(ciIdx->getType(), val);
+                DEBUGERR << val << "<END>\n";
+                DEBUGERR << *ciAddend << "<END>\n";
 
                 Type *tmp = findTypeAtIndex(currType, ciIdx);
                 assert(tmp && "Should always be defined");
@@ -203,18 +235,46 @@ class ClamBCPrepareGEPsForWriter : public ModulePass
                     currType = llvm::cast<StructType>(tmp);
                 } else if (llvm::isa<ArrayType>(tmp)) {
                     currType = tmp;
-                }
+                } 
+#if 0 
+else { 
+    DEBUGERR << *tmp << "<END>\n";
+    assert (0 && "What do i do here"); 
+}
+#endif
             } else if (ArrayType *pat = llvm::dyn_cast<ArrayType>(currType)) {
 
+                DEBUGERR << *pat << "<END>\n";
+
                 uint64_t size = getTypeSizeInBytes(pat->getArrayElementType());
+                DEBUGERR << "size = " << size << "<END>\n";
                 Constant *pci = ConstantInt::get(vIdx->getType(), size);
+                DEBUGERR << "pci = " << *pci << "<END>\n";
                 ciAddend      = BinaryOperator::Create(Instruction::Mul, pci, vIdx, "processGEPI_", pgepi);
+                DEBUGERR << "ciAddend = " << *ciAddend << "<END>\n";
+
+
+                Type *tmp = findTypeAtIndex(currType, ciIdx);
+                assert(tmp && "Should always be defined");
+
+                DEBUGERR << *tmp << "<END>\n";
+
+                if (llvm::isa<StructType>(tmp)) {
+                    currType = llvm::cast<StructType>(tmp);
+                } else if (llvm::isa<ArrayType>(tmp)) {
+                    currType = tmp;
+                } 
+
+
+
             } else {
                 assert(0 && "Figure out what to do here");
             }
 
             vCnt = BinaryOperator::Create(Instruction::Add, vCnt, ciAddend, "processGEPI_", pgepi);
         }
+
+        DEBUGERR << "AFTER FOR<END>\n";
 
         Constant *Zero                     = ConstantInt::get(vIdx->getType(), 0);
         llvm::ArrayRef<llvm::Value *> Idxs = {Zero, Zero};
@@ -262,16 +322,23 @@ class ClamBCPrepareGEPsForWriter : public ModulePass
             ConstantInt *pc = llvm::dyn_cast<ConstantInt>(vIdx);
             if (pc) {
                 Type *pt = findTypeAtIndex(currType, pc);
+                //DEBUGERR << vIdx << "<END>\n";
+                //DEBUGERR << *pc << "<END>\n";
+                //DEBUGERR << *pt << "<END>\n";
                 if (pt) {
                     currType              = pt;
                     ConstantInt *ciAddend = nullptr;
                     if (StructType *pst = llvm::dyn_cast<StructType>(pt)) {
+                //DEBUGERR << "calling computeOffsetInBytes" << "<END>\n";
                         uint64_t val = computeOffsetInBytes(pst, pc);
+                //DEBUGERR << "after computeOffsetInBytes" << "<END>\n";
                         ciAddend     = ConstantInt::get(pc->getType(), val);
                         pCurrStruct  = pst;
 
                     } else {
+                //DEBUGERR << "calling computeOffsetInBytes" << "<END>\n";
                         uint64_t val = computeOffsetInBytes(pCurrStruct, pc);
+                //DEBUGERR << "after computeOffsetInBytes" << "<END>\n";
                         ciAddend     = ConstantInt::get(pc->getType(), val);
                         vIdx         = BinaryOperator::Create(Instruction::Add, ciAddend, vIdx, "processGEPI_", pgepi);
                     }
@@ -314,6 +381,40 @@ class ClamBCPrepareGEPsForWriter : public ModulePass
         return pInst;
     }
 
+
+    virtual void andyGetIdx(GetElementPtrInst *pgepi){
+
+        return;
+
+        llvm::errs() << "\n";
+        llvm::errs() << "\n";
+        llvm::errs() << "\n";
+        DEBUGERR << *pgepi << "<END>\n";
+        DEBUGERR << *pgepi->getType() << "<END>\n";
+        DEBUGERR << *pgepi->getPointerOperand() << "<END>\n";
+        DEBUGERR << *pgepi->getPointerOperand()->getType() << "<END>\n";
+
+        Type * pt = pgepi->getPointerOperand()->getType()->getPointerElementType();
+        DEBUGERR << llvm::isa<ArrayType>(pt) << "<END>\n";
+        DEBUGERR << llvm::isa<StructType>(pt) << "<END>\n";
+
+        size_t typeSize = getTypeSize(pt);
+
+        DEBUGERR << "typeSize (bits) = " << typeSize << "<END>\n";
+
+        for (size_t i = 0; i < pgepi->getNumOperands(); i++){
+            DEBUGERR << *(pgepi->getOperand(i)) << "<END>\n";
+        }
+
+
+        if ("clambcRebuildInboundsGEP35"== pgepi->getName()) {
+            assert (0 && "fix this here");
+        }
+
+
+    }
+
+
     virtual void processGEPI(GetElementPtrInst *pgepi)
     {
 
@@ -331,12 +432,27 @@ class ClamBCPrepareGEPsForWriter : public ModulePass
                 assert(0 && "ClamBCLowering did not do it's job");
             }
 
+
+
+            andyGetIdx(pgepi);
+
+
+
+
+
+
+
+
+
             Type *gepiDstType = pbci->getType()->getPointerElementType();
             if (StructType *pst = llvm::dyn_cast<StructType>(gepiDstType)) {
                 processGEPI(pgepi, pbci, vPtr, pst);
             } else if (ArrayType *pat = llvm::dyn_cast<ArrayType>(gepiDstType)) {
                 processGEPI(pgepi, pbci, vPtr, pat);
             }
+
+} else { assert (0 && "WHAT DO WE DO HERE?????!!!!!");
+
         }
     }
 
@@ -363,7 +479,6 @@ class ClamBCPrepareGEPsForWriter : public ModulePass
 
     virtual bool runOnModule(Module &m)
     {
-
         pMod = &m;
         for (auto i = pMod->begin(), e = pMod->end(); i != e; i++) {
             Function *pFunc = llvm::cast<Function>(i);
