@@ -1,0 +1,8 @@
+copy this to llvm/lib/Transforms, and add the directory to the
+llvm/lib/Transforms/CMakeLists.txt file.
+
+Must be built in release mode.  run with
+
+opt-16 -S --load-pass-plugin /home/aragusa/llvm/build_no_assertions/lib/MyPass.so --passes="my-pass" test.ll -o test.t.ll
+
+
