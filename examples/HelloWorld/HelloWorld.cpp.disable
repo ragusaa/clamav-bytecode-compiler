@@ -1,0 +1,36 @@
+#ifndef LLVM_TRANSFORMS_HELLONEW_HELLOWORLD_H
+#define LLVM_TRANSFORMS_HELLONEW_HELLOWORLD_H
+
+//#include "llvm/CodeGen/CodeGenPassBuilder.h"
+//#include "/home/aragusa/llvm/llvm/include/llvm/CodeGen/CodeGenPassBuilder.h"
+
+#include "llvm/IR/PassManager.h"
+
+
+namespace llvm {
+
+class HelloWorldPass : public PassInfoMixin<HelloWorldPass> {
+public:
+  PreservedAnalyses run(Function &F, FunctionAnalysisManager &AM);
+};
+
+} // namespace llvm
+
+//End of header file.
+
+using namespace llvm;
+
+PreservedAnalyses HelloWorldPass::run(Function &F,
+                                      FunctionAnalysisManager &AM) {
+  errs() << F.getName() << "\n";
+  return PreservedAnalyses::all();
+}
+
+
+//FUNCTION_PASS("fuck", HelloWorldPass());
+
+
+
+
+#endif // LLVM_TRANSFORMS_HELLONEW_HELLOWORLD_H
+
