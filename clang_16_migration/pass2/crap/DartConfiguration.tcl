@@ -5,7 +5,7 @@
 
 # Configuration directories and files
 SourceDirectory: /home/aragusa/clamav-bytecode-compiler-aragusa/clang_16_migration/pass2
-BuildDirectory: /home/aragusa/clamav-bytecode-compiler-aragusa/clang_16_migration/pass2/crap
+BuildDirectory: /home/aragusa/clamav-bytecode-compiler-aragusa/clang_16_migration/pass2/build
 
 # Where to place the cost data store
 CostDataFile: 

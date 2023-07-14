@@ -20,10 +20,37 @@ rule CUSTOM_COMMAND
 
 
 #############################################
+# Rule for linking CXX shared library.
+
+rule CXX_SHARED_LIBRARY_LINKER__clambcc
+  command = $PRE_LINK && /usr/bin/clang++-12 -fPIC $LANGUAGE_COMPILE_FLAGS $ARCH_FLAGS $LINK_FLAGS -shared $SONAME_FLAG$SONAME -o $TARGET_FILE $in $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  description = Linking CXX shared library $TARGET_FILE
+  restat = $RESTAT
+
+
+#############################################
+# Rule for creating library symlink.
+
+rule CMAKE_SYMLINK_LIBRARY
+  command = /usr/bin/cmake -E cmake_symlink_library $in $SONAME $out && $POST_BUILD
+  description = Creating library symlink $out
+
+
+#############################################
+# Rule for compiling CXX files.
+
+rule CXX_COMPILER__clambcc_obj
+  depfile = $DEP_FILE
+  deps = gcc
+  command = /usr/bin/clang++-12  $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  description = Building CXX object $out
+
+
+#############################################
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = /usr/bin/cmake -S/home/aragusa/clamav-bytecode-compiler-aragusa/clang_16_migration/pass2 -B/home/aragusa/clamav-bytecode-compiler-aragusa/clang_16_migration/pass2/crap
+  command = /usr/bin/cmake -S/home/aragusa/clamav-bytecode-compiler-aragusa/clang_16_migration/pass2 -B/home/aragusa/clamav-bytecode-compiler-aragusa/clang_16_migration/pass2/build
   description = Re-running CMake...
   generator = 1
 

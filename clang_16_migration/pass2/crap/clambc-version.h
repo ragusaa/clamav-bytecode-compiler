@@ -35,7 +35,7 @@
  * release. This is a 24 bit number with 8 bits for major number, 8 bits
  * for minor and 8 bits for patch. Version 1.2.3 becomes 0x010203.
  */
-#define CLAMBC_VERSION_NUM 0x006900
+#define CLAMBC_VERSION_NUM 
 
 /**
  * @macro
@@ -49,6 +49,6 @@
  * release. This is a 24 bit number with 8 bits for major number, 8 bits
  * for minor and 8 bits for patch. Version 1.2.3 becomes 0x010203.
  */
-#define LIBCLAMBC_VERSION_NUM 0x010000
+#define LIBCLAMBC_VERSION_NUM 
 
 #endif /* CLAMBC_VER_H */
