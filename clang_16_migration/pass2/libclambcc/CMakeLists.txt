@@ -3,6 +3,7 @@
 
 add_subdirectory(MyModulePass)
 add_subdirectory(MyModulePass2)
+add_subdirectory(MyFunctionPass)
 
 
 

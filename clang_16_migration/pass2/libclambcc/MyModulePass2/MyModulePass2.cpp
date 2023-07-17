@@ -18,7 +18,7 @@ struct MyModulePass : public PassInfoMixin<MyModulePass> {
   // (e.g ModuleAnalysisManager, FunctionAnalysisManager)
   PreservedAnalyses run(Module &F, ModuleAnalysisManager  &FAM) {
 
-    std::cout << "MyModulePass in Module: " << F.getName().str() << std::endl;
+    std::cout << "MyModulePass2 in Module: " << F.getName().str() << std::endl;
 
     // Here goes what you want to do with a pass
 
