@@ -7,6 +7,9 @@ add_library(clambcc_obj OBJECT)
 target_sources(clambcc_obj
     PRIVATE
         Common/ClamBCUtilities.cpp
+        Common/ClamBCDiagnostics.cpp
+        Common/ClamBCRegAlloc.cpp
+
         ClamBCRemoveUndefs/ClamBCRemoveUndefs.cpp
 )
 
