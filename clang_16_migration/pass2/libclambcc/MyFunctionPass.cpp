@@ -20,8 +20,6 @@ struct MyPass : public PassInfoMixin<MyPass> {
 
     std::cout << "MyPass in function: " << F.getName().str() << std::endl;
 
-    errs() << "<" << __LINE__ << ">" << "<END>\n";
-
     // Here goes what you want to do with a pass
 
     // Assuming you did not change anything of the IR code
