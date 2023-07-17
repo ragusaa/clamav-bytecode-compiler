@@ -37,7 +37,7 @@ llvmGetPassPluginInfo() {
       PB.registerPipelineParsingCallback(
         [](StringRef Name, ModulePassManager &FPM,
         ArrayRef<PassBuilder::PipelineElement>) {
-          if(Name == "my-pass"){
+          if(Name == "my-module-pass"){
             FPM.addPass(MyModulePass());
             return true;
           }
