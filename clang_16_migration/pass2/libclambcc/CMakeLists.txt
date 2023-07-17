@@ -12,8 +12,8 @@ target_sources(clambcc_obj
 
         ClamBCRemoveUndefs/ClamBCRemoveUndefs.cpp
 
-        MyFunctionPass.cpp
         MyModulePass.cpp
+        MyFunctionPass.cpp
 )
 
 target_include_directories(clambcc_obj
