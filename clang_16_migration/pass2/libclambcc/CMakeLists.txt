@@ -6,4 +6,5 @@ add_subdirectory(MyModulePass2)
 add_subdirectory(MyFunctionPass)
 
 
+add_subdirectory(ClamBCRemoveUndefs)
 
