@@ -6,7 +6,7 @@
 add_library(clambcc_obj OBJECT)
 target_sources(clambcc_obj
     PRIVATE
-        MyPass.cpp
+        ClamBCRemoveUndefs/ClamBCRemoveUndefs.cpp
 )
 
 target_include_directories(clambcc_obj
