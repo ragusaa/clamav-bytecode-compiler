@@ -10,7 +10,7 @@ using namespace llvm;
 
 namespace {
 
-struct MyPass : public PassInfoMixin<MyPass> {
+struct MyFunctionPass : public PassInfoMixin<MyFunctionPass> {
 
   // The first argument of the run() function defines on what level
   // of granularity your pass will run (e.g. Module, Function).
@@ -18,7 +18,7 @@ struct MyPass : public PassInfoMixin<MyPass> {
   // (e.g ModuleAnalysisManager, FunctionAnalysisManager)
   PreservedAnalyses run(Function &F, FunctionAnalysisManager &FAM) {
 
-    std::cout << "MyPass in function: " << F.getName().str() << std::endl;
+    std::cout << "MyFunctionPass in function: " << F.getName().str() << std::endl;
 
     // Here goes what you want to do with a pass
 
@@ -32,13 +32,13 @@ struct MyPass : public PassInfoMixin<MyPass> {
 extern "C" ::llvm::PassPluginLibraryInfo LLVM_ATTRIBUTE_WEAK
 llvmGetPassPluginInfo() {
   return {
-    LLVM_PLUGIN_API_VERSION, "MyPass", "v0.1",
+    LLVM_PLUGIN_API_VERSION, "MyFunctionPass", "v0.1",
     [](PassBuilder &PB) {
       PB.registerPipelineParsingCallback(
         [](StringRef Name, FunctionPassManager &FPM,
         ArrayRef<PassBuilder::PipelineElement>) {
           if(Name == "my-pass"){
-            FPM.addPass(MyPass());
+            FPM.addPass(MyFunctionPass());
             return true;
           }
           return false;
