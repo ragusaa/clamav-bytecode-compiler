@@ -11,6 +11,8 @@ target_sources(clambcc_obj
         Common/ClamBCRegAlloc.cpp
 
         ClamBCRemoveUndefs/ClamBCRemoveUndefs.cpp
+
+        MyPass.cpp
 )
 
 target_include_directories(clambcc_obj
