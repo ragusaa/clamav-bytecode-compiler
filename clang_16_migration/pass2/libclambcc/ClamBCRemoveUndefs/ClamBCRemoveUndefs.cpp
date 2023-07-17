@@ -35,7 +35,7 @@ namespace
 class ClamBCRemoveUndefs : public ModulePass
 {
   protected:
-    llvm::Module *pMod = nullptr;
+    Module *pMod = nullptr;
     std::map<Function *, BasicBlock *> aborts;
 
     bool bChanged = false;
@@ -56,10 +56,21 @@ class ClamBCRemoveUndefs : public ModulePass
         FunctionType *rterrTy = FunctionType::get(
             Type::getInt32Ty(BB->getContext()),
             {Type::getInt32Ty(BB->getContext())}, false);
+#if 0
         Constant *func_abort =
             BB->getParent()->getParent()->getOrInsertFunction("abort", abrtTy);
+
         Constant *func_rterr =
             BB->getParent()->getParent()->getOrInsertFunction("bytecode_rt_error", rterrTy);
+
+#else
+	llvm::errs() << "<" << __LINE__ << ">" << "Don't know if this will work, remove the ifdef later\n";
+
+	FunctionCallee func_abort = BB->getParent()->getParent()->getOrInsertFunction("abort", abrtTy);
+	FunctionCallee func_rterr =
+            BB->getParent()->getParent()->getOrInsertFunction("bytecode_rt_error", rterrTy);
+
+#endif
         BasicBlock *abort = BasicBlock::Create(BB->getContext(), "rterr.trig", BB->getParent());
         Constant *PN      = ConstantInt::get(Type::getInt32Ty(BB->getContext()), 99);
         if (MDDbgKind) {
