@@ -31,19 +31,24 @@ clang-16 -S -emit-llvm -O0 -Xclang -disable-O0-optnone ../../testing/test.c
 
 
 
+#opt-16 -S \
+#    --load-pass-plugin libclambcc/MyModulePass/libclambcc_mymodulepass.so \
+#    --load-pass-plugin libclambcc/MyModulePass2/libclambcc_mymodulepass2.so \
+#    --load-pass-plugin libclambcc/MyFunctionPass/libclambcc_myfunctionpass.so \
+#    --passes="my-module-pass2,my-module-pass" test.ll -o test.t.ll
+#
+#
+#opt-16 -S \
+#    --load-pass-plugin libclambcc/MyModulePass/libclambcc_mymodulepass.so \
+#    --load-pass-plugin libclambcc/MyModulePass2/libclambcc_mymodulepass2.so \
+#    --load-pass-plugin libclambcc/MyFunctionPass/libclambcc_myfunctionpass.so \
+#    --passes="my-function-pass" test.ll -o test.t.ll
+#
+
+
+
 opt-16 -S \
-    --load-pass-plugin libclambcc/MyModulePass/libclambcc_mymodulepass.so \
-    --load-pass-plugin libclambcc/MyModulePass2/libclambcc_mymodulepass2.so \
-    --load-pass-plugin libclambcc/MyFunctionPass/libclambcc_myfunctionpass.so \
-    --passes="my-module-pass2,my-module-pass" test.ll -o test.t.ll
-
-
-opt-16 -S \
-    --load-pass-plugin libclambcc/MyModulePass/libclambcc_mymodulepass.so \
-    --load-pass-plugin libclambcc/MyModulePass2/libclambcc_mymodulepass2.so \
-    --load-pass-plugin libclambcc/MyFunctionPass/libclambcc_myfunctionpass.so \
-    --passes="my-function-pass" test.ll -o test.t.ll
-
-
+    --load-pass-plugin libclambcc/ClamBCRemoveUndefs/libclambcremoveundefs.so \
+    --passes=clambc-remove-undefs test.ll -o test.t.ll
 
 

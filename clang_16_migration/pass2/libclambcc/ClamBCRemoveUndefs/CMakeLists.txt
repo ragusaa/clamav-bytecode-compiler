@@ -1,15 +1,15 @@
 # Copyright (C) 2021 Cisco Systems, Inc. and/or its affiliates. All rights reserved.
 
 #
-# The clambcc_clambcremoveundefs object library
+# The clambcremoveundefs object library
 #
-add_library(clambcc_clambcremoveundefs_obj OBJECT)
-target_sources(clambcc_clambcremoveundefs_obj
+add_library(clambcremoveundefs_obj OBJECT)
+target_sources(clambcremoveundefs_obj
     PRIVATE
         ClamBCRemoveUndefs.cpp
 )
 
-target_include_directories(clambcc_clambcremoveundefs_obj
+target_include_directories(clambcremoveundefs_obj
     PRIVATE
         ${CMAKE_BINARY_DIR} # For clambc-version.h (generated file)
         .                   # For Common/clambc.h
@@ -17,35 +17,35 @@ target_include_directories(clambcc_clambcremoveundefs_obj
         ${LLVM_INCLUDE_DIRS}
 )
 
-set_target_properties(clambcc_clambcremoveundefs_obj PROPERTIES COMPILE_FLAGS "${WARNCXXFLAGS}")
+set_target_properties(clambcremoveundefs_obj PROPERTIES COMPILE_FLAGS "${WARNCXXFLAGS}")
 
 #
 # For testing
 #
-#target_compile_definitions(clambcc_clambcremoveundefs_obj -DLOG_BEFORE_AFTER=1)
+#target_compile_definitions(clambcremoveundefs_obj -DLOG_BEFORE_AFTER=1)
 
 #
-# The clambcc_clambcremoveundefs shared library.
+# The clambcremoveundefs shared library.
 #
-add_library( clambcc_clambcremoveundefs SHARED )
-target_link_libraries( clambcc_clambcremoveundefs
+add_library( clambcremoveundefs SHARED )
+target_link_libraries( clambcremoveundefs
     PUBLIC
-        clambcc_clambcremoveundefs_obj )
-set_target_properties( clambcc_clambcremoveundefs PROPERTIES
+        clambcremoveundefs_obj )
+set_target_properties( clambcremoveundefs PROPERTIES
     VERSION ${LIBCLAMBC_VERSION}
     SOVERSION ${LIBCLAMBC_SOVERSION} )
 
-target_link_directories(clambcc_clambcremoveundefs PRIVATE ${LLVM_LIBRARY_DIRS})
-target_link_libraries(clambcc_clambcremoveundefs PUBLIC ${LLVM_LIBS})
+target_link_directories(clambcremoveundefs PRIVATE ${LLVM_LIBRARY_DIRS})
+target_link_libraries(clambcremoveundefs PUBLIC ${LLVM_LIBS})
 
 if(WIN32)
-    install(TARGETS clambcc_clambcremoveundefs DESTINATION .)
+    install(TARGETS clambcremoveundefs DESTINATION .)
 
     # Also install shared library (DLL) dependencies
     install(CODE [[
         file(GET_RUNTIME_DEPENDENCIES
             LIBRARIES
-                $<TARGET_FILE:clambcc_clambcremoveundefs>
+                $<TARGET_FILE:clambcremoveundefs>
             RESOLVED_DEPENDENCIES_VAR _r_deps
             UNRESOLVED_DEPENDENCIES_VAR _u_deps
             DIRECTORIES
@@ -65,7 +65,7 @@ if(WIN32)
         #message("UNRESOLVED_DEPENDENCIES_VAR: ${_u_deps}")
     ]])
 else()
-    install(TARGETS clambcc_clambcremoveundefs DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(TARGETS clambcremoveundefs DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 
 
