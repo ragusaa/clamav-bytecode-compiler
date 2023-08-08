@@ -50,6 +50,9 @@ clang-16 -S -emit-llvm -O0 -Xclang -disable-O0-optnone ../../testing/test.c
 opt-16 -S \
     --load-pass-plugin libclambcc/ClamBCRemoveUndefs/libclambcremoveundefs.so \
     --load-pass-plugin libclambcc/ClamBCPreserveABIs/libclambcpreserveabis.so \
-    --passes="clambc-remove-undefs,clambc-preserve-abis" test.ll -o test.t.ll
+    -p -mem2reg \
+    --passes="clambc-remove-undefs,clambc-preserve-abis" \
+    -O3 \
+    test.ll -o test.t.ll
 
 
