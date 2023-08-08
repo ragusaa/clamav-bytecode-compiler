@@ -61,13 +61,9 @@ class ClamBCPreserveABIs : public PassInfoMixin<ClamBCPreserveABIs>
 #if 0
         pFunctionType          = llvm::cast<FunctionType>(llvm::cast<PointerType>(pFunc->getType())->getElementType());
 #else
-        pFunctionType = llvm::cast<FunctionType>(pFunc->getType());
-        
-        llvm::errs() << "<" << __LINE__ << ">" << *pFunc << "<END>\n";
-        llvm::errs() << "<" << __LINE__ << ">" << *pFunctionType << "<END>\n";
+        pFunctionType = pFunc->getFunctionType();
 
-        assert (0 && "This looks right, but verify (and why was it the way it was???)");
-
+        llvm::errs() << "<" << __LINE__ << ">" << "<END>\n";
 #endif
         Function *fakeFunction = Function::Create(pFunctionType, Function::ExternalLinkage, newname, pFunc->getParent());
         fakeFunctions.push_back(fakeFunction);
@@ -163,6 +159,8 @@ class ClamBCPreserveABIs : public PassInfoMixin<ClamBCPreserveABIs>
     {
         pMod = &m;
 
+        llvm::errs() << "<"  << __LINE__ << ">" << "<END>\n";
+
         if (removeFakeFunctions()) {
 #if 0
             return bChanged;
@@ -170,22 +168,29 @@ class ClamBCPreserveABIs : public PassInfoMixin<ClamBCPreserveABIs>
             return PreservedAnalyses::none();
 #endif
         }
+        llvm::errs() << "<"  << __LINE__ << ">" << "<END>\n";
 
         for (auto i = pMod->begin(), e = pMod->end(); i != e; i++) {
+        llvm::errs() << "<"  << __LINE__ << ">" << "<END>\n";
             Function *pFunc = llvm::cast<Function>(i);
+        llvm::errs() << "<"  << __LINE__ << ">" << "<END>\n";
             if (pFunc->isDeclaration()) {
                 continue;
             }
+        llvm::errs() << "<"  << __LINE__ << ">" << "<END>\n";
 
             if (GlobalValue::InternalLinkage == pFunc->getLinkage()) {
                 /*Set the linkage type to external so that the optimizer cannot remove the arguments.*/
                 pFunc->setLinkage(GlobalValue::ExternalLinkage);
             }
+        llvm::errs() << "<"  << __LINE__ << ">" << "<END>\n";
 
             processFunction(pFunc);
         }
+        llvm::errs() << "<"  << __LINE__ << ">" << "<END>\n";
 
         writeMetadata();
+        llvm::errs() << "<"  << __LINE__ << ">" << "<END>\n";
 
 #if 0
         return bChanged;
