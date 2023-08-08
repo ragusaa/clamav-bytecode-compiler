@@ -46,7 +46,11 @@ class ClamBCPreserveABIs : public ModulePass
             return;
         }
         FunctionType *pFunctionType = llvm::dyn_cast<FunctionType>(pFunc->getType());
+#if 0
         std::string newname         = pFunc->getName();
+#else
+        std::string newname( pFunc->getName());
+#endif
         newname += "_fake";
         pFunctionType          = llvm::cast<FunctionType>(llvm::cast<PointerType>(pFunc->getType())->getElementType());
         Function *fakeFunction = Function::Create(pFunctionType, Function::ExternalLinkage, newname, pFunc->getParent());
