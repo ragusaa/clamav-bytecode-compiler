@@ -244,9 +244,9 @@ struct ClamBCRemoveUndefs : public PassInfoMixin<ClamBCRemoveUndefs >
 #if 0
     static char ID;
     ClamBCRemoveUndefs() {}
+#endif
 
     virtual ~ClamBCRemoveUndefs() {}
-#endif
 
 
 

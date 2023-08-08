@@ -1,4 +1,7 @@
 
+#include "Common/clambc.h"
+#include "Common/ClamBCUtilities.h"
+
 #include <llvm/Pass.h>
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Module.h"
@@ -9,9 +12,40 @@
 
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
+#include "llvm/Passes/PassPlugin.h"
 
-#include "Common/clambc.h"
-#include "Common/ClamBCUtilities.h"
+
+
+
+
+
+#include <llvm/Pass.h>
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/Support/raw_ostream.h"
+
+
+
+#include "llvm/IR/PassManager.h"
+#include "llvm/Passes/PassBuilder.h"
+#include "llvm/Passes/PassPlugin.h"
+#include "llvm/Support/raw_ostream.h"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #include <sstream>
 #include <string>
@@ -32,7 +66,7 @@ namespace
  * to fake functions.  If it does find it (the second time), it removes those
  * calls.
  */
-class ClamBCPreserveABIs : public ModulePass
+class ClamBCPreserveABIs : public PassInfoMixin<ClamBCPreserveABIs>
 {
   protected:
     llvm::Module *pMod = nullptr;
@@ -52,7 +86,17 @@ class ClamBCPreserveABIs : public ModulePass
         std::string newname( pFunc->getName());
 #endif
         newname += "_fake";
+#if 0
         pFunctionType          = llvm::cast<FunctionType>(llvm::cast<PointerType>(pFunc->getType())->getElementType());
+#else
+        pFunctionType = llvm::cast<FunctionType>(pFunc->getType());
+        
+        llvm::errs() << "<" << __LINE__ << ">" << *pFunc << "<END>\n";
+        llvm::errs() << "<" << __LINE__ << ">" << *pFunctionType << "<END>\n";
+
+        assert (0 && "This looks right, but verify (and why was it the way it was???)");
+
+#endif
         Function *fakeFunction = Function::Create(pFunctionType, Function::ExternalLinkage, newname, pFunc->getParent());
         fakeFunctions.push_back(fakeFunction);
         std::vector<Value *> args;
@@ -131,18 +175,28 @@ class ClamBCPreserveABIs : public ModulePass
     }
 
   public:
+#if 0
     static char ID;
     ClamBCPreserveABIs()
         : ModulePass(ID) {}
+#endif
 
     virtual ~ClamBCPreserveABIs() {}
 
+#if 0
     bool runOnModule(Module &m) override
+#else
+       PreservedAnalyses run(Module & m, ModuleAnalysisManager & MAM)
+#endif
     {
         pMod = &m;
 
         if (removeFakeFunctions()) {
+#if 0
             return bChanged;
+#else
+            return PreservedAnalyses::none();
+#endif
         }
 
         for (auto i = pMod->begin(), e = pMod->end(); i != e; i++) {
@@ -161,7 +215,14 @@ class ClamBCPreserveABIs : public ModulePass
 
         writeMetadata();
 
+#if 0
         return bChanged;
+#else
+        if (bChanged){
+            return PreservedAnalyses::none();
+        }
+        return PreservedAnalyses::all();
+#endif
     }
 }; // end of struct ClamBCPreserveABIs
 
