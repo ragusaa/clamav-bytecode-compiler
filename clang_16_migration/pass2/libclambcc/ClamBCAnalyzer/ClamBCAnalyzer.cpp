@@ -164,7 +164,13 @@ bool ClamBCAnalyzer::runOnModule(Module &M)
 
                 Type *type = CE->getOperand(0)->getType();
                 if (llvm::isa<PointerType>(type)) {
+#if 0
                     type = llvm::cast<PointerType>(type)->getElementType();
+#else
+                    llvm::errs() << "<" << __LINE__ << ">" << "https://llvm.org/docs/OpaquePointers.html" << "<END>\n";
+                    llvm::errs() << "<" << __LINE__ << ">" << *CE << "<END>\n";
+                    assert (0 && "FIGURE OUT WHAT TO DO HERE");
+#endif
                 }
                 uint64_t idx = dataLayout.getIndexedOffsetInType(type, indices);
 
