@@ -150,6 +150,10 @@ bool ClamBCRegAlloc::runOnFunction(Function &F)
                     SrcTy = SPTy->getElementType();
                     DstTy = DPTy->getElementType();
 #else
+
+                    assert (0 && "removed deprecated getPointerElementType calls");
+
+
                     /*Don't expect any issues with this change.*/
                     SrcTy = SPTy->getPointerElementType();
                     DstTy = DPTy->getPointerElementType();
