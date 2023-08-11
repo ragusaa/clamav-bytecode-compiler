@@ -47,6 +47,8 @@ clang-16 -S -emit-llvm -O0 -Xclang -disable-O0-optnone ../../testing/test.c
 
 
 
+#There are warnings about not being able to load libclambccommon.so, but I 
+#can add print statements to functions in that library and have them print, so ???
 opt-16 -S \
     --load-pass-plugin libclambcc/ClamBCRemoveUndefs/libclambcremoveundefs.so \
     --load-pass-plugin libclambcc/ClamBCPreserveABIs/libclambcpreserveabis.so \
