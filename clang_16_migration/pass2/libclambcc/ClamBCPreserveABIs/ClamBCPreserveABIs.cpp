@@ -9,11 +9,10 @@
 
 #include <llvm/IR/Dominators.h>
 
-#include <llvm/IR/LegacyPassManager.h>
+//#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <llvm/Passes/PassPlugin.h>
 #include <llvm/Passes/PassBuilder.h>
-#include <llvm/Passes/PassPlugin.h>
 
 
 #include <sstream>
@@ -152,7 +151,7 @@ class ClamBCPreserveABIs : public PassInfoMixin<ClamBCPreserveABIs>
 #if 0
     bool runOnModule(Module &m) override
 #else
-       PreservedAnalyses run(Module & m, ModuleAnalysisManager & MAM)
+    virtual PreservedAnalyses run(Module & m, ModuleAnalysisManager & MAM)
 #endif
     {
         pMod = &m;
