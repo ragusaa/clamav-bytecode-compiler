@@ -37,7 +37,7 @@
 
 using namespace llvm;
 
-extern cl::opt<bool> WriteDI;
+//extern cl::opt<bool> WriteDI;
 
 static unsigned getSpecialIndex(StringRef Name)
 {

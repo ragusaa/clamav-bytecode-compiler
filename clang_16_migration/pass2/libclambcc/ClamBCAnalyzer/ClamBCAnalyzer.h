@@ -81,6 +81,7 @@ class ClamBCAnalyzer : public llvm::PassInfoMixin<ClamBCAnalyzer> //llvm::Module
     unsigned maxGlobal = 0;
     std::vector<llvm::Constant *> globalInits;
     std::vector<const llvm::MDNode *> mds;
+    bool WriteDI = false;
 
     virtual void printGlobals(uint16_t stid);
 
