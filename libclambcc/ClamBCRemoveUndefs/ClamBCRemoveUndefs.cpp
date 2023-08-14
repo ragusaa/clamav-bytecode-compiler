@@ -5,19 +5,6 @@
 #include "llvm/IR/Instructions.h"
 #include "llvm/Support/raw_ostream.h"
 
-
-
-#include "llvm/IR/PassManager.h"
-#include "llvm/Passes/PassBuilder.h"
-#include "llvm/Passes/PassPlugin.h"
-#include "llvm/Support/raw_ostream.h"
-
-
-
-
-
-
-
 #include <llvm/IR/Dominators.h>
 
 #include "llvm/IR/LegacyPassManager.h"
@@ -45,10 +32,10 @@ namespace
            store %struct._state* %state, %struct._state** %state.addr, align 8
            store i32 %sizeof_state, i32* %sizeof_state.addr, align 4
      */
-struct ClamBCRemoveUndefs : public PassInfoMixin<ClamBCRemoveUndefs > 
+class ClamBCRemoveUndefs : public ModulePass
 {
   protected:
-    Module *pMod = nullptr;
+    llvm::Module *pMod = nullptr;
     std::map<Function *, BasicBlock *> aborts;
 
     bool bChanged = false;
@@ -69,21 +56,10 @@ struct ClamBCRemoveUndefs : public PassInfoMixin<ClamBCRemoveUndefs >
         FunctionType *rterrTy = FunctionType::get(
             Type::getInt32Ty(BB->getContext()),
             {Type::getInt32Ty(BB->getContext())}, false);
-#if 0
         Constant *func_abort =
             BB->getParent()->getParent()->getOrInsertFunction("abort", abrtTy);
-
         Constant *func_rterr =
             BB->getParent()->getParent()->getOrInsertFunction("bytecode_rt_error", rterrTy);
-
-#else
-	llvm::errs() << "<" << __LINE__ << ">" << "Don't know if this will work, remove the ifdef later\n";
-
-	FunctionCallee func_abort = BB->getParent()->getParent()->getOrInsertFunction("abort", abrtTy);
-	FunctionCallee func_rterr =
-            BB->getParent()->getParent()->getOrInsertFunction("bytecode_rt_error", rterrTy);
-
-#endif
         BasicBlock *abort = BasicBlock::Create(BB->getContext(), "rterr.trig", BB->getParent());
         Constant *PN      = ConstantInt::get(Type::getInt32Ty(BB->getContext()), 99);
         if (MDDbgKind) {
@@ -241,21 +217,13 @@ struct ClamBCRemoveUndefs : public PassInfoMixin<ClamBCRemoveUndefs >
     }
 
   public:
-#if 0
     static char ID;
-    ClamBCRemoveUndefs() {}
-#endif
+    ClamBCRemoveUndefs()
+        : ModulePass(ID) {}
 
     virtual ~ClamBCRemoveUndefs() {}
 
-
-
-
-#if 0
     bool runOnModule(Module &m) override
-#else
-    PreservedAnalyses run(Module & m, ModuleAnalysisManager & MAM)
-#endif
     {
         pMod = &m;
 
@@ -272,40 +240,13 @@ struct ClamBCRemoveUndefs : public PassInfoMixin<ClamBCRemoveUndefs >
             delLst[i]->eraseFromParent();
         }
 
-        errs() << "<" << __LINE__ << ">" << "99\% sure this is wrong, since this pass does NOT preserve analyses<END>\n";
-        return PreservedAnalyses::all();
+        return bChanged;
     }
 }; // end of struct ClamBCRemoveUndefs
 
 } // end of anonymous namespace
 
-#if 0
 char ClamBCRemoveUndefs::ID = 0;
 static RegisterPass<ClamBCRemoveUndefs> X("clambc-remove-undefs", "Remove Undefs",
                                           false /* Only looks at CFG */,
                                           false /* Analysis Pass */);
-#else
-
-// This part is the new way of registering your pass
-extern "C" ::llvm::PassPluginLibraryInfo LLVM_ATTRIBUTE_WEAK
-llvmGetPassPluginInfo() {
-  return {
-    LLVM_PLUGIN_API_VERSION, "ClamBCRemoveUndefs", "v0.1",
-    [](PassBuilder &PB) {
-      PB.registerPipelineParsingCallback(
-        [](StringRef Name, ModulePassManager &FPM,
-        ArrayRef<PassBuilder::PipelineElement>) {
-          if(Name == "clambc-remove-undefs"){
-            FPM.addPass(ClamBCRemoveUndefs());
-            return true;
-          }
-          return false;
-        }
-      );
-    }
-  };
-}
-
-
-#endif
-
