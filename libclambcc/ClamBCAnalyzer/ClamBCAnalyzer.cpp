@@ -164,7 +164,11 @@ bool ClamBCAnalyzer::runOnModule(Module &M)
 
                 Type *type = CE->getOperand(0)->getType();
                 if (llvm::isa<PointerType>(type)) {
+#if 1
                     type = llvm::cast<PointerType>(type)->getElementType();
+#else
+                    assert (0 && "Where is this used");
+#endif
                 }
                 uint64_t idx = dataLayout.getIndexedOffsetInType(type, indices);
 
