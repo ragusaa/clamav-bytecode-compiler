@@ -75,4 +75,14 @@ opt-16 -S \
     --passes="clambc-remove-undefs,clambc-preserve-abis,default<O3>,clambc-preserve-abis" \
     test.ll -o test.t.ll
 
+#opt-16 -S \
+#    --load libclambcc/Common/libclambccommon.so \
+#    --load-pass-plugin libclambcc/ClamBCRemoveUndefs/libclambcremoveundefs.so \
+#    --load-pass-plugin libclambcc/ClamBCPreserveABIs/libclambcpreserveabis.so \
+#    --load-pass-plugin libclambcc/ClamBCAnalyzer/libclambcanalyzer.so \
+#    --passes="-mem2reg"\
+#    --passes="clambc-remove-undefs,clambc-preserve-abis,default<O3>,clambc-preserve-abis,clambc-remove-pointer-phis" \
+#    test.ll -o test.t.ll
+#
+
 
