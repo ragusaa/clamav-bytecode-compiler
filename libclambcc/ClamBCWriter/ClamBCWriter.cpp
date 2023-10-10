@@ -20,8 +20,8 @@
  *  MA 02110-1301, USA.
  */
 #include "../Common/bytecode_api.h"
-#include "clambc.h"
-#include "ClamBCModule.h"
+#include "Common/clambc.h"
+#include "Common/ClamBCModule.h"
 #include "ClamBCAnalyzer/ClamBCAnalyzer.h"
 #include "Common/ClamBCUtilities.h"
 
@@ -278,7 +278,11 @@ class ClamBCOutputWriter
                     STy->dump();
                     ClamBCStop("Pointers inside structs are not supported\n", M);
                 }
+#if 0
                 unsigned abiAlign = M->getDataLayout().getABITypeAlignment(Ty);
+#else
+                unsigned abiAlign = M->getDataLayout().getABITypeAlign(Ty).value();
+#endif
                 unsigned typeBits = M->getDataLayout().getTypeSizeInBits(Ty);
 
                 if (Ty->isIntegerTy() && 8 * abiAlign < typeBits) {
@@ -310,7 +314,14 @@ class ClamBCOutputWriter
 
         if (const PointerType *PTy = dyn_cast<PointerType>(Ty)) {
             printFixedNumber(Out, 5, 1);
+#if 0
             const Type *ETy = PTy->getElementType();
+#else
+            DEBUG_VALUE(Ty);
+            assert (0 && 
+                    "Figure out what to do here");
+            const Type *ETy = nullptr;
+#endif
             // pointers to opaque types are treated as i8*
             int id = -1;
             if (llvm::isa<StructType>(ETy)) {
@@ -441,7 +452,7 @@ class ClamBCOutputWriter
             // function prototype
             printNumber(Out, pAnalyzer->getTypeID(F->getFunctionType()), false);
             // function name
-            std::string Name = F->getName();
+            std::string Name (F->getName());
             printConstData(Out, (const unsigned char *)Name.c_str(), Name.size() + 1);
         }
 
@@ -684,7 +695,7 @@ class ClamBCOutputWriter
     }
 };
 
-class ClamBCWriter : public ModulePass, public InstVisitor<ClamBCWriter>
+class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<ClamBCWriter>
 {
     typedef DenseMap<const BasicBlock *, unsigned> BBIDMap;
     BBIDMap BBMap;
@@ -707,8 +718,7 @@ class ClamBCWriter : public ModulePass, public InstVisitor<ClamBCWriter>
   public:
     static char ID;
     explicit ClamBCWriter()
-        : ModulePass(ID),
-          TheModule(0), MapOut(0), Dumper(0)
+        : TheModule(0), MapOut(0), Dumper(0)
     {
         if (!MapFile.empty()) {
             std::error_code ec;
@@ -741,11 +751,22 @@ class ClamBCWriter : public ModulePass, public InstVisitor<ClamBCWriter>
 
     virtual bool doInitialization(Module &M);
 
+#if 0
     bool runOnModule(Module &m)
+#else
+
+    PreservedAnalyses run(Module & m, ModuleAnalysisManager & MAM)
+#endif
     {
 
+        DEBUGERR << "TODO: Remove InstVisitor stuff" << "<END>\n";
+
         pMod          = &m;
+#if 0
         pAnalyzer     = &getAnalysis<ClamBCAnalyzer>();
+#else
+        pAnalyzer     = MAM.getResult<ClamBCAnalyzer>();
+#endif
         pOutputWriter = ClamBCOutputWriter::createClamBCOutputWriter(outFile, pMod, pAnalyzer);
 
         for (auto i = pMod->begin(), e = pMod->end(); i != e; i++) {
@@ -757,7 +778,8 @@ class ClamBCWriter : public ModulePass, public InstVisitor<ClamBCWriter>
             }
         }
 
-        return false;
+        //return false;
+        return PreservedAnalyses::all();
     }
 
     void gatherGEPs(BasicBlock *pBB, std::vector<GetElementPtrInst *> &geps)
@@ -805,7 +827,12 @@ class ClamBCWriter : public ModulePass, public InstVisitor<ClamBCWriter>
             assert(operand->getType()->isPointerTy() && "HOW COULD THIS HAPPEN?");
 
             Type *pType = operand->getType();
+#if 0
             pType       = pType->getPointerElementType();
+#else
+            DEBUGERR << *pGep << "<END>\n";
+            assert (0 && "Figure out what to do here");
+#endif
 
             if (not pType->isIntegerTy()) {
                 assert(0 && "ONLY INTEGER TYPES ARE CURRENTLY IMPLEMENTED");
@@ -976,7 +1003,12 @@ class ClamBCWriter : public ModulePass, public InstVisitor<ClamBCWriter>
                         if (ConstantInt *CI = dyn_cast<ConstantInt>(GEP.getOperand(1))) {
                             if (!CI->isZero()) {
                                 const PointerType *Ty = cast<PointerType>(GEP.getPointerOperand()->getType());
+#if 0
                                 const ArrayType *ATy  = dyn_cast<ArrayType>(Ty->getElementType());
+#else
+                                const ArrayType *ATy  = nullptr;
+                                assert (0 && "Figure out what to do here");
+#endif
                                 if (ATy) {
                                     ClamBCStop("ATy", &GEP);
                                 }
@@ -1608,7 +1640,38 @@ void ClamBCWriter::printBasicBlock(BasicBlock *BB)
     }
 }
 
+#if 0
 llvm::ModulePass *createClamBCWriter()
 {
     return new ClamBCWriter();
 }
+#else
+
+// This part is the new way of registering your pass
+extern "C" ::llvm::PassPluginLibraryInfo LLVM_ATTRIBUTE_WEAK
+llvmGetPassPluginInfo() {
+    return {
+        LLVM_PLUGIN_API_VERSION, "ClamBCWriter", "v0.1",
+            [](PassBuilder &PB) {
+                PB.registerPipelineParsingCallback(
+                        [](StringRef Name, ModulePassManager &FPM,
+                            ArrayRef<PassBuilder::PipelineElement>) {
+                        if(Name == "clambc-writer"){
+                        FPM.addPass(ClamBCWriter());
+                        return true;
+                        }
+                        return false;
+                        }
+                        );
+            }
+    };
+}
+
+
+
+
+#endif
+
+
+
+
