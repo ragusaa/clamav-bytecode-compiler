@@ -50,7 +50,8 @@
 //5.  Cannot see where banMap has any functions inserted.  Do we need it?
 //6.  Evaluate the TODO in runOnModule.
 
-class ClamBCAnalyzer : public llvm::PassInfoMixin<ClamBCAnalyzer> //llvm::ModulePass
+//class ClamBCAnalyzer : public llvm::PassInfoMixin<ClamBCAnalyzer> //llvm::ModulePass
+class ClamBCAnalyzer : public llvm::AnalysisInfoMixin<ClamBCAnalyzer> //llvm::ModulePass
 {
   protected:
     typedef llvm::DenseMap<const llvm::Type *, unsigned> TypeMapTy;
