@@ -765,7 +765,9 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 #if 0
         pAnalyzer     = &getAnalysis<ClamBCAnalyzer>();
 #else
-        pAnalyzer     = MAM.getResult<ClamBCAnalyzer>();
+        //pAnalyzer     = MAM.getResult<ClamBCAnalyzer>();
+        //FunctionAnalysisManager &fam = MAM.getResult<FunctionAnalysisManagerModuleProxy>(m).getManager();
+        //LoopInfo * li = &fam.getResult<LoopAnalysis>(*F);
 #endif
         pOutputWriter = ClamBCOutputWriter::createClamBCOutputWriter(outFile, pMod, pAnalyzer);
 
