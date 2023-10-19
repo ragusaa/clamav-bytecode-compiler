@@ -22,7 +22,6 @@
 #include "Common/bytecode_api.h"
 #include "Common/clambc.h"
 #include "Common/ClamBCModule.h"
-#include "ClamBCAnalyzer/ClamBCAnalyzer.h"
 #include "Common/ClamBCUtilities.h"
 
 #include <llvm/Support/DataTypes.h>
