@@ -51,7 +51,7 @@
 //6.  Evaluate the TODO in runOnModule.
 
 //class ClamBCAnalyzer : public llvm::PassInfoMixin<ClamBCAnalyzer> //llvm::ModulePass
-class ClamBCAnalyzer : public llvm::AnalysisInfoMixin<ClamBCAnalyzer> //llvm::ModulePass
+class ClamBCAnalysis 
 {
   protected:
     typedef llvm::DenseMap<const llvm::Type *, unsigned> TypeMapTy;
@@ -109,7 +109,7 @@ class ClamBCAnalyzer : public llvm::AnalysisInfoMixin<ClamBCAnalyzer> //llvm::Mo
 
   public:
     static char ID;
-    explicit ClamBCAnalyzer()
+    explicit ClamBCAnalysis()
         //: ModulePass(ID)
     {
 
@@ -124,7 +124,7 @@ class ClamBCAnalyzer : public llvm::AnalysisInfoMixin<ClamBCAnalyzer> //llvm::Mo
         globalsMap["__clambc_match_offsets"] = GLOBAL_MATCH_OFFSETS;
     }
 
-    ~ClamBCAnalyzer() {}
+    ~ClamBCAnalysis() {}
     //virtual bool runOnModule(llvm::Module &m) override;
     virtual llvm::PreservedAnalyses run(llvm::Module & m, llvm::ModuleAnalysisManager & MAM);
 
@@ -253,6 +253,24 @@ class ClamBCAnalyzer : public llvm::AnalysisInfoMixin<ClamBCAnalyzer> //llvm::Mo
     {
         return virusnames;
     }
+};
+
+class ClamBCAnalyzer : public llvm::AnalysisInfoMixin<ClamBCAnalyzer> //llvm::ModulePass
+{
+    public:
+        friend llvm::AnalysisInfoMixin<ClamBCAnalyzer> ;
+        static llvm::AnalysisKey Key;
+
+        ClamBCAnalyzer(){}
+        virtual ~ClamBCAnalyzer(){}
+
+        typedef ClamBCAnalysis Result;
+
+        ClamBCAnalysis run(llvm::Module & mod, llvm::ModuleAnalysisManager & mam){
+            ClamBCAnalysis ret;
+
+            return ret;
+        }
 };
 
 #endif //CLAMBC_ANALYZER_H_

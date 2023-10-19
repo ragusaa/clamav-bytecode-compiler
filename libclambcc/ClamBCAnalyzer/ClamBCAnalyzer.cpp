@@ -37,6 +37,8 @@
 
 using namespace llvm;
 
+AnalysisKey ClamBCAnalyzer::Key;
+
 //extern cl::opt<bool> WriteDI;
 
 static unsigned getSpecialIndex(StringRef Name)
@@ -68,9 +70,10 @@ static bool compare_lt_functions(Function *A, Function *B)
 }
 
 #if 0
-bool ClamBCAnalyzer::runOnModule(Module &M)
+bool ClamBCAnalysis::runOnModule(Module &M)
 #else
-PreservedAnalyses ClamBCAnalyzer::run(Module & m, ModuleAnalysisManager & MAM)
+PreservedAnalyses ClamBCAnalysis::run(Module & m, ModuleAnalysisManager & MAM)
+//ClamBCAnalysis ClamBCAnalysis::run(Module & m, ModuleAnalysisManager & MAM)
 #endif
 {
     pMod = &m;
@@ -345,9 +348,10 @@ PreservedAnalyses ClamBCAnalyzer::run(Module & m, ModuleAnalysisManager & MAM)
 
     //return false;
         return PreservedAnalyses::all();
+        //return ClamBCAnalysis();
 }
 
-void ClamBCAnalyzer::printGlobals(uint16_t stid)
+void ClamBCAnalysis::printGlobals(uint16_t stid)
 {
     llvm::Module &M = *pMod;
     // Describe types
@@ -484,7 +488,7 @@ void ClamBCAnalyzer::printGlobals(uint16_t stid)
 }
 
 // need to use bytecode_api_decl.c.h
-void ClamBCAnalyzer::populateAPIMap()
+void ClamBCAnalysis::populateAPIMap()
 {
     unsigned id                          = 1;
     apiMap["test1"]                      = id++;
@@ -597,7 +601,7 @@ void ClamBCAnalyzer::populateAPIMap()
 }
 
 #if 0
-void ClamBCAnalyzer::getAnalysisUsage(AnalysisUsage &AU) const
+void ClamBCAnalysis::getAnalysisUsage(AnalysisUsage &AU) const
 {
     // Preserve the CFG, we only eliminate PHIs, and introduce some
     // loads/stores.
@@ -605,29 +609,39 @@ void ClamBCAnalyzer::getAnalysisUsage(AnalysisUsage &AU) const
 }
 #endif
 #if 0
-char ClamBCAnalyzer::ID = 0;
-static RegisterPass<ClamBCAnalyzer> X("clambc-analyzer",
+char ClamBCAnalysis::ID = 0;
+static RegisterPass<ClamBCAnalysis> X("clambc-analyzer",
                                       "ClamAV bytecode register allocator");
 
-const PassInfo *const ClamBCAnalyzerID = &X;
+const PassInfo *const ClamBCAnalysisID = &X;
 #else
 
 // This part is the new way of registering your pass
 extern "C" ::llvm::PassPluginLibraryInfo LLVM_ATTRIBUTE_WEAK
 llvmGetPassPluginInfo() {
   return {
-    LLVM_PLUGIN_API_VERSION, "ClamBCAnalyzer", "v0.1",
+    LLVM_PLUGIN_API_VERSION, "ClamBCAnalysis", "v0.1",
     [](PassBuilder &PB) {
+#if 0
       PB.registerPipelineParsingCallback(
         [](StringRef Name, ModulePassManager &FPM,
         ArrayRef<PassBuilder::PipelineElement>) {
           if(Name == "clambc-analyzer"){
-            FPM.addPass(ClamBCAnalyzer());
+            FPM.addPass(ClamBCAnalysis());
             return true;
           }
           return false;
         }
       );
+#else
+                PB.registerAnalysisRegistrationCallback(
+                        [](ModuleAnalysisManager &mam) {
+                            mam.registerPass([] () { return ClamBCAnalyzer(); } );
+                        }
+                        );
+
+#endif
+
     }
   };
 }

@@ -19,7 +19,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  *  MA 02110-1301, USA.
  */
-#include "../Common/bytecode_api.h"
+#include "Common/bytecode_api.h"
 #include "Common/clambc.h"
 #include "Common/ClamBCModule.h"
 #include "ClamBCAnalyzer/ClamBCAnalyzer.h"
@@ -105,7 +105,7 @@ class ClamBCOutputWriter
   public:
     static ClamBCOutputWriter *createClamBCOutputWriter(llvm::StringRef srFileName,
                                                         llvm::Module *pMod,
-                                                        ClamBCAnalyzer *pAnalyzer)
+                                                        ClamBCAnalysis *pAnalyzer)
     {
         std::error_code ec;
         raw_fd_ostream *rfo        = new raw_fd_ostream(srFileName, ec);
@@ -123,7 +123,7 @@ class ClamBCOutputWriter
         return ret;
     }
 
-    ClamBCOutputWriter(llvm::formatted_raw_ostream &outStream, llvm::Module *pMod, ClamBCAnalyzer *pAnalyzer)
+    ClamBCOutputWriter(llvm::formatted_raw_ostream &outStream, llvm::Module *pMod, ClamBCAnalysis *pAnalyzer)
         : Out(lineBuffer), OutReal(outStream), maxLineLength(0), lastLinePos(0), pMod(pMod), pAnalyzer(pAnalyzer)
     {
         printGlobals(pMod, pAnalyzer);
@@ -162,7 +162,7 @@ class ClamBCOutputWriter
         printFixedNumber(Out, n, fixed);
     }
 
-    void printModuleHeader(Module &M, ClamBCAnalyzer *pAnalyzer, unsigned maxLine)
+    void printModuleHeader(Module &M, ClamBCAnalysis *pAnalyzer, unsigned maxLine)
     {
         NamedMDNode *MinFunc = M.getNamedMetadata("clambc.funcmin");
         NamedMDNode *MaxFunc = M.getNamedMetadata("clambc.funcmax");
@@ -251,7 +251,7 @@ class ClamBCOutputWriter
         assert((OutReal.tell() < 8192) && "OutReal too big");
     }
 
-    void describeType(llvm::raw_ostream &Out, const Type *Ty, Module *M, ClamBCAnalyzer *pAnalyzer)
+    void describeType(llvm::raw_ostream &Out, const Type *Ty, Module *M, ClamBCAnalysis *pAnalyzer)
     {
         if (const FunctionType *FTy = dyn_cast<FunctionType>(Ty)) {
             printFixedNumber(Out, 1, 1);
@@ -413,7 +413,7 @@ class ClamBCOutputWriter
         ClamBCStop("Unsupported constant type", &M);
     }
 
-    void printGlobals(llvm::Module *pMod, ClamBCAnalyzer *pAnalyzer)
+    void printGlobals(llvm::Module *pMod, ClamBCAnalysis *pAnalyzer)
     {
         const std::string &ls = pAnalyzer->getLogicalSignature();
         if (ls.empty()) {
@@ -544,7 +544,7 @@ class ClamBCOutputWriter
         }
     }
 
-    void finished(llvm::Module *pMod, ClamBCAnalyzer *pAnalyzer)
+    void finished(llvm::Module *pMod, ClamBCAnalysis *pAnalyzer)
     {
 
         //maxline+1, 1 more for \0
@@ -628,7 +628,7 @@ class ClamBCOutputWriter
     int maxLineLength         = 0;
     int lastLinePos           = 0;
     llvm::Module *pMod        = nullptr;
-    ClamBCAnalyzer *pAnalyzer = nullptr;
+    ClamBCAnalysis *pAnalyzer = nullptr;
 
     void printFixedNumber(raw_ostream &Out, unsigned n, unsigned fixed)
     {
@@ -713,7 +713,7 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 
     llvm::Module *pMod                = nullptr;
     ClamBCOutputWriter *pOutputWriter = nullptr;
-    ClamBCAnalyzer *pAnalyzer         = nullptr;
+    ClamBCAnalysis *pAnalyzer         = nullptr;
 
   public:
     static char ID;
@@ -744,8 +744,13 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 
     void getAnalysisUsage(AnalysisUsage &AU) const
     {
+#if 0
         AU.addRequired<ClamBCRegAlloc>();
         AU.addRequired<ClamBCAnalyzer>();
+#else
+        //AU.addRequiredID<ClamBCAnalyzer::Key>();
+        assert (0 && "Not sure if this is even called");
+#endif
         AU.setPreservesAll();
     }
 
@@ -769,7 +774,9 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
          * Look at createModuleDebugInfoPrinterPass
          * Look at createMustBeExecutedContextPrinter
          */
-        pAnalyzer     = MAM.getResult<ClamBCAnalyzer>(m);
+        //pAnalyzer     = MAM.getResult<ClamBCAnalyzer>(m);
+        ClamBCAnalysis analysis     = MAM.getResult<ClamBCAnalyzer>(m);
+        pAnalyzer = &analysis;
         //FunctionAnalysisManager &fam = MAM.getResult<FunctionAnalysisManagerModuleProxy>(m).getManager();
         //LoopInfo * li = &fam.getResult<LoopAnalysis>(*F);
 #endif
@@ -893,7 +900,11 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
         //Removed, see note about getFunctionID at the top of the file.
         assert(pAnalyzer->getFunctionID(&F) == fid);
 
+#if 0
         RA = &getAnalysis<ClamBCRegAlloc>(F);
+#else
+        assert (0 && "Convert ClamBCRegAlloc analysis");
+#endif
         printFunction(F);
         if (Dumper) {
             Dumper->runOnFunction(F);
@@ -1425,10 +1436,12 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
         stop("ClamAV bytecode backend does not know about ", &I);
     }
 };
+#if 0
 char ClamBCWriter::ID = 0;
 static RegisterPass<ClamBCWriter> X("clambc-writer", "ClamBCWriter Pass",
                                     false /* Only looks at CFG */,
                                     false /* Analysis Pass */);
+#endif
 
 bool ClamBCWriter::doInitialization(Module &M)
 {
