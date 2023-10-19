@@ -719,7 +719,7 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
     FunctionPass *Dumper = nullptr;
     ClamBCRegAlloc *RA   = nullptr;
     unsigned fid, minflvl;
-    MetadataContext *TheMetadata = nullptr;
+    //MetadataContext *TheMetadata = nullptr;
     unsigned MDDbgKind;
     std::vector<unsigned> dbgInfo;
     bool anyDbg;

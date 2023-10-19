@@ -22,14 +22,17 @@
 #ifndef CLAMBC_MODULE_H
 #define CLAMBC_MODULE_H
 #include <cstddef>
-#include "llvm/ADT/DenseMap.h"
-#include "llvm/ADT/DenseSet.h"
-#include "llvm/ADT/StringMap.h"
-#include "llvm/ADT/StringRef.h"
-#include "llvm/ADT/Twine.h"
+#include <llvm/ADT/DenseMap.h>
+#include <llvm/ADT/DenseSet.h>
+#include <llvm/ADT/StringMap.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/ADT/Twine.h>
 #include <llvm/Pass.h>
 #include <llvm/IR/IRBuilder.h>
-#include "llvm/Support/raw_ostream.h"
+#include <llvm/Support/FormattedStream.h>
+#include <llvm/IR/Metadata.h>
+#include <llvm/IR/Dominators.h>
+
 #include <vector>
 #include <map>
 
@@ -38,6 +41,7 @@
 class ClamBCWriter;
 class ClamBCRegAlloc;
 
+#if 0
 namespace llvm
 {
 class Constant;
@@ -57,6 +61,7 @@ class Twine;
 class Value;
 class formatted_raw_ostream;
 } // namespace llvm
+#endif
 
 class ClamBCModule : public llvm::ModulePass
 {
@@ -84,7 +89,7 @@ class ClamBCModule : public llvm::ModulePass
     llvm::StringMap<unsigned> globalsMap;
     unsigned kind;
 
-    llvm::MetadataContext *TheMetadata;
+    //llvm::MetadataContext *TheMetadata;
     unsigned MDDbgKind;
     DbgMapTy dbgMap;
     bool anyDbgIds;
