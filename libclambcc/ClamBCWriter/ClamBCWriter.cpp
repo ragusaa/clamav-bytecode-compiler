@@ -776,6 +776,8 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
     PreservedAnalyses run(Module & m, ModuleAnalysisManager & MAM)
 #endif
     {
+        /*This used to be called as part of setup, so call it here (New Pass Manager)*/
+        doInitialization(m);
 
         DEBUGERR << "TODO: Remove InstVisitor stuff" << "<END>\n";
 
@@ -903,6 +905,10 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
             return false;
         }
         fid++;
+        DEBUGERR << "Incrementing fid for function '" << F.getName() << "'<END>\n";
+        DEBUG_NONPOINTER(F.getName());
+        DEBUG_NONPOINTER(fid);
+        DEBUG_NONPOINTER(pAnalyzer->getFunctionID(&F));
         //Removed, see note about getFunctionID at the top of the file.
         assert(pAnalyzer->getFunctionID(&F) == fid);
 
@@ -1480,6 +1486,7 @@ bool ClamBCWriter::doInitialization(Module &M)
         //TODO: Get debug info working.
         //Dumper = createDbgInfoPrinterPass();
     }
+    DEBUGERR << "Initializing fid to zero<END>\n";
     fid = 0;
     //OModule->writeGlobalMap(MapOut);
     MDDbgKind = M.getContext().getMDKindID("dbg");
