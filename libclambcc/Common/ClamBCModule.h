@@ -30,7 +30,6 @@
 #include <llvm/Pass.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/Support/FormattedStream.h>
-#include <llvm/IR/Metadata.h>
 #include <llvm/IR/Dominators.h>
 
 #include <vector>
@@ -40,28 +39,6 @@
 
 class ClamBCWriter;
 class ClamBCRegAlloc;
-
-#if 0
-namespace llvm
-{
-class Constant;
-class ConstantExpr;
-class DominatorTree;
-class Function;
-class FunctionPass;
-class GlobalVariable;
-class Instruction;
-class MetadataBase;
-class MetadataContext;
-class Module;
-class PassInfo;
-class PHINode;
-class Type;
-class Twine;
-class Value;
-class formatted_raw_ostream;
-} // namespace llvm
-#endif
 
 class ClamBCModule : public llvm::ModulePass
 {
