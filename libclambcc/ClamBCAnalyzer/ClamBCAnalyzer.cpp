@@ -72,8 +72,7 @@ static bool compare_lt_functions(Function *A, Function *B)
 #if 0
 bool ClamBCAnalysis::runOnModule(Module &M)
 #else
-PreservedAnalyses ClamBCAnalysis::run(Module & m, ModuleAnalysisManager & MAM)
-//ClamBCAnalysis ClamBCAnalysis::run(Module & m, ModuleAnalysisManager & MAM)
+void ClamBCAnalysis::run(Module & m)
 #endif
 {
     pMod = &m;
@@ -347,8 +346,6 @@ PreservedAnalyses ClamBCAnalysis::run(Module & m, ModuleAnalysisManager & MAM)
     printGlobals(startTID);
 
     //return false;
-        return PreservedAnalyses::all();
-        //return ClamBCAnalysis();
 }
 
 void ClamBCAnalysis::printGlobals(uint16_t stid)

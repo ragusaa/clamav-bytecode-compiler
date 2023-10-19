@@ -126,7 +126,7 @@ class ClamBCAnalysis
 
     ~ClamBCAnalysis() {}
     //virtual bool runOnModule(llvm::Module &m) override;
-    virtual llvm::PreservedAnalyses run(llvm::Module & m, llvm::ModuleAnalysisManager & MAM);
+    virtual void run(llvm::Module & m);
 
 #if 0
     virtual void getAnalysisUsage(llvm::AnalysisUsage &au) const override;
@@ -268,6 +268,7 @@ class ClamBCAnalyzer : public llvm::AnalysisInfoMixin<ClamBCAnalyzer> //llvm::Mo
 
         ClamBCAnalysis & run(llvm::Module & mod, llvm::ModuleAnalysisManager & mam){
             ClamBCAnalysis ret;
+            ret.run(mod);
 
             return ret;
         }
