@@ -40,6 +40,7 @@
 class ClamBCWriter;
 class ClamBCRegAlloc;
 
+#if 0
 class ClamBCModule : public llvm::ModulePass
 {
     typedef llvm::DenseMap<const llvm::Type *, unsigned> TypeMapTy;
@@ -174,6 +175,7 @@ class ClamBCModule : public llvm::ModulePass
     static void printString(llvm::raw_ostream &Out, const char *string, unsigned maxLength);
     void validateVirusName(const std::string &name);
 };
+#endif
 
 class ClamBCRegAlloc : public llvm::FunctionPass
 {
