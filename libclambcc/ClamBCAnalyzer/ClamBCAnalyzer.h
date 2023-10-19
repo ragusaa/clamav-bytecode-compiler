@@ -266,7 +266,7 @@ class ClamBCAnalyzer : public llvm::AnalysisInfoMixin<ClamBCAnalyzer> //llvm::Mo
 
         typedef ClamBCAnalysis Result;
 
-        ClamBCAnalysis run(llvm::Module & mod, llvm::ModuleAnalysisManager & mam){
+        ClamBCAnalysis & run(llvm::Module & mod, llvm::ModuleAnalysisManager & mam){
             ClamBCAnalysis ret;
 
             return ret;

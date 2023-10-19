@@ -622,26 +622,11 @@ llvmGetPassPluginInfo() {
   return {
     LLVM_PLUGIN_API_VERSION, "ClamBCAnalysis", "v0.1",
     [](PassBuilder &PB) {
-#if 0
-      PB.registerPipelineParsingCallback(
-        [](StringRef Name, ModulePassManager &FPM,
-        ArrayRef<PassBuilder::PipelineElement>) {
-          if(Name == "clambc-analyzer"){
-            FPM.addPass(ClamBCAnalysis());
-            return true;
-          }
-          return false;
-        }
-      );
-#else
                 PB.registerAnalysisRegistrationCallback(
                         [](ModuleAnalysisManager &mam) {
                             mam.registerPass([] () { return ClamBCAnalyzer(); } );
                         }
                         );
-
-#endif
-
     }
   };
 }

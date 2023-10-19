@@ -770,15 +770,8 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 #if 0
         pAnalyzer     = &getAnalysis<ClamBCAnalyzer>();
 #else
-        /*
-         * Look at createModuleDebugInfoPrinterPass
-         * Look at createMustBeExecutedContextPrinter
-         */
-        //pAnalyzer     = MAM.getResult<ClamBCAnalyzer>(m);
-        ClamBCAnalysis analysis     = MAM.getResult<ClamBCAnalyzer>(m);
+        ClamBCAnalysis & analysis     = MAM.getResult<ClamBCAnalyzer>(m);
         pAnalyzer = &analysis;
-        //FunctionAnalysisManager &fam = MAM.getResult<FunctionAnalysisManagerModuleProxy>(m).getManager();
-        //LoopInfo * li = &fam.getResult<LoopAnalysis>(*F);
 #endif
         pOutputWriter = ClamBCOutputWriter::createClamBCOutputWriter(outFile, pMod, pAnalyzer);
 
