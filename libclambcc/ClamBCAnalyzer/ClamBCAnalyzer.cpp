@@ -126,10 +126,14 @@ void ClamBCAnalysis::run(Module & m)
     fid = 1;
     for (Module::global_iterator I = pMod->global_begin(); I != pMod->global_end(); ++I) {
         GlobalVariable *gv = llvm::cast<GlobalVariable>(I);
+DEBUG_VALUE(gv);
         std::set<Instruction *> insts;
         std::set<GlobalVariable *> globs;
         std::set<ConstantExpr *> ces;
         getDependentValues(gv, insts, globs, ces);
+DEBUG_NONPOINTER(insts.size());
+DEBUG_NONPOINTER(globs.size());
+DEBUG_NONPOINTER(ces.size());
 
         /*It is necessary to add these twice, because there is a condition we
          * can't use global idx 0 or 1 in the interpreter, since the size will
@@ -197,7 +201,7 @@ void ClamBCAnalysis::run(Module & m)
                 Idxs[0]     = ConstantInt::get(Type::getInt64Ty(CE->getContext()), idx);
                 Constant *C = ConstantExpr::getPointerCast(CE->getOperand(0), IP8Ty);
                 ConstantExpr *NewCE =
-                    cast<ConstantExpr>(ConstantExpr::getGetElementPtr(nullptr, C,
+                    cast<ConstantExpr>(ConstantExpr::getGetElementPtr(C->getType(), C,
                                                                       Idxs));
                 NewCE = cast<ConstantExpr>(ConstantExpr::getPointerCast(NewCE,
                                                                         CE->getType()));
@@ -215,6 +219,11 @@ void ClamBCAnalysis::run(Module & m)
 
         // Collect types of all globals.
         const Type *Ty = I->getType();
+        Ty = I->getValueType();
+        DEBUGERR << "FIGURE OUT IF THIS IS RIGHT" << "<END>\n";
+
+        DEBUG_VALUE(Ty);
+        DEBUG_VALUE(I->getValueType());
         if (!typeIDs.count(Ty)) {
             extraTypes.push_back(Ty);
             typeIDs[Ty] = tid++;
@@ -428,10 +437,13 @@ void ClamBCAnalysis::printGlobals(uint16_t stid)
         specialGlobals.insert(GV);
     }
 
+    DEBUGERR << "PRINTING ALL GLOBALS IN ANALYZER" << "<END>\n";
+
     // std::vector<Constant *> globalInits;
     globalInits.push_back(0); // ConstantPointerNul placeholder
     for (Module::global_iterator I = pMod->global_begin(), E = pMod->global_end(); I != E; ++I) {
         GlobalVariable *pgv = llvm::cast<GlobalVariable>(I);
+        DEBUG_VALUE(pgv);
         if (specialGlobals.count(pgv)) {
             continue;
         }
@@ -466,6 +478,7 @@ void ClamBCAnalysis::printGlobals(uint16_t stid)
             ClamBCStop("Attempted to use more than 32k global variables!", &M);
         }
     }
+    DEBUGERR << "DONE PRINTING ALL GLOBALS IN ANALYZER" << "<END>\n";
 
     if (anyDbgIds) {
         mds.resize(dbgMap.size());

@@ -63,6 +63,17 @@ extern "C" const char *clambc_getversion(void);
 //There were some things that were in the previous Module, that may or may not be needed at this time.  There
 //are ways to share data between passes, will do that if it is necessary.
 
+/*Consider setting target triple to 32-bit, avoid some of these conversions.
+ * -target i386-ibm-linux-gnu
+ *
+ *
+ *  Currently using options '-Xclang -no-opaque-pointers' for clang and
+ *  -opaque-pointers=0 for opt.  Ultimately need to remove those, but going to get other bugs
+ *  resolved before tackling that.
+ *
+ *  */
+
+
 using namespace llvm;
 
 static cl::opt<std::string> MapFile("clambc-map", cl::desc("Write compilation map"),
@@ -410,6 +421,7 @@ class ClamBCOutputWriter
             return;
         }
 
+        DEBUG_VALUE(C);
         ClamBCStop("Unsupported constant type", &M);
     }
 
@@ -474,6 +486,7 @@ class ClamBCOutputWriter
             }
             Constant *pConst = llvm::cast<Constant>(*I);
             // type of constant
+DEBUG_VALUE(*I);
             uint16_t id = pAnalyzer->getTypeID((*I)->getType());
             printNumber(Out, id, false);
             // value of constant

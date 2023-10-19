@@ -51,33 +51,61 @@ PASS_STR+=',clambc-preserve-abis' #remove fake function calls because O3 has alr
 PASS_STR+=',function(clambc-remove-pointer-phis)'
 PASS_STR+=',clambc-lowering-notfinal' # perform lowering pass
 PASS_STR+=',lowerswitch'
-
 PASS_STR+=',function(clambc-verifier)'
 PASS_STR+=',clambc-remove-freeze-insts'
+PASS_STR+=',clambc-lowering-notfinal'  # perform lowering pass
+PASS_STR+=',clambc-lcompiler-helper' #compile the logical_trigger function to a
+PASS_STR+=',clambc-lcompiler' #compile the logical_trigger function to a
+PASS_STR+=',clambc-rebuild'
+PASS_STR+=',clambc-trace'
+PASS_STR+=',clambc-outline-endianness-calls'
+PASS_STR+=',clambc-change-malloc-arg-size'
+PASS_STR+=',clambc-extend-phis-to-64-bit'
+PASS_STR+=',clambc-writer'
 
 
 
-#print ("TODO: Put verifier back")
-
-#PASS_STR+=',clambc-lowering-notfinal'  # perform lowering pass
-#PASS_STR+=',clambc-lcompiler' #compile the logical_trigger function to a
 
 INSTALL_DIR=os.path.join(os.getcwd(), "..")
 LOAD_STR = "--load %s/install/lib/libclambccommon.so " % INSTALL_DIR
-LOAD_STR += "--load-pass-plugin %s/install/lib/libclambcremoveundefs.so  " % INSTALL_DIR
-LOAD_STR += "--load-pass-plugin %s/install/lib/libclambcpreserveabis.so  " % INSTALL_DIR
-LOAD_STR += "--load-pass-plugin %s/install/lib/libclambcanalyzer.so  " % INSTALL_DIR
-LOAD_STR += "--load-pass-plugin %s/install/lib/libclambcremovepointerphis.so  " % INSTALL_DIR
-LOAD_STR += "--load-pass-plugin %s/install/lib/libclambcloweringf.so  " % INSTALL_DIR
-LOAD_STR += "--load-pass-plugin %s/install/lib/libclambcloweringnf.so  " % INSTALL_DIR
-LOAD_STR += "--load-pass-plugin %s/install/lib/libclambcverifier.so  " % INSTALL_DIR
-LOAD_STR += "--load-pass-plugin %s/install/lib/libclambclogicalcompiler.so  " % INSTALL_DIR
-LOAD_STR += "--load-pass-plugin %s/install/lib/libclambcremovefreezeinsts.so  " % INSTALL_DIR
-#LOAD_STR += "--load-pass-plugin %s/install/lib/libclambcrebuild.so" % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcremoveundefs.so  " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcpreserveabis.so  " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcanalyzer.so  " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcremovepointerphis.so  " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcloweringf.so  " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcloweringnf.so  " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcverifier.so  " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambclogicalcompiler.so  " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambclogicalcompilerhelper.so  " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcremovefreezeinsts.so  " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcrebuild.so " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambctrace.so " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcoutlineendiannesscalls.so " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcchangemallocargsize.so " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcextendphisto64bit.so " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcwriter.so " % INSTALL_DIR
+
+
+#wd = os.getcwd()
+#os.chdir(os.path.join(INSTALL_DIR, "install"))
+
+#os.system("tar xvf lib.tar")
+
+
+#os.chdir(wd)
+
+
+
+
+
+
 
 #OPT_CMD = 'opt-16 -S %s --passes=\"-mem2reg\" --passes=\"%s\" %s ' % (LOAD_STR, PASS_STR, OPTIONS_STR)
 OPT_CMD = 'opt-16 -S %s --passes=\"%s\" %s ' % (LOAD_STR, PASS_STR, OPTIONS_STR)
 
+
+OPT_CMD += " -opaque-pointers=0 "
+COMPILE_CMD += " -Xclang -no-opaque-pointers "
 
 """
 #This is to find undefs.

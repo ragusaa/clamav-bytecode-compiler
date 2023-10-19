@@ -263,13 +263,17 @@ Type * getResultType(Value * pVal){
         return nullptr;
     }
 
+    DEBUG_VALUE(type);
+
     if (llvm::isa<PointerType>(type)) {
+        DEBUG_WHERE;
         if (llvm::isa<GEPOperator>(pVal)){
             GEPOperator * pgep = llvm::cast<GEPOperator>(pVal);
-            type = pgep->getPointerOperandType();
+            type = pgep->getSourceElementType();
+
         } else if (llvm::isa<GetElementPtrInst>(pVal)){
             GetElementPtrInst * pInst = llvm::cast<GetElementPtrInst>(pVal);
-            type = pInst->getPointerOperandType();
+            type = pInst->getSourceElementType();
         } else if (llvm::isa<BitCastOperator>(pVal)){
             BitCastOperator * pbco = llvm::cast<BitCastOperator>(pVal);
             type = pbco->getDestTy();
