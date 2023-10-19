@@ -20,7 +20,6 @@
  *  MA 02110-1301, USA.
  */
 
-#include "Common/ClamBCModule.h"
 #include "Common/clambc.h"
 #include "Common/bytecode_api.h"
 #include "Common/ClamBCDiagnostics.h"

@@ -21,7 +21,6 @@
  */
 //#define DEBUG_TYPE "bcloweringf"
 #include "Common/clambc.h"
-#include "Common/ClamBCModule.h"
 
 #include <llvm/Passes/PassPlugin.h>
 

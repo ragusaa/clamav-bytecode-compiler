@@ -23,7 +23,6 @@
 #include "ClamBCLowering.h"
 
 #include "Common/clambc.h"
-#include "Common/ClamBCModule.h"
 
 #include <llvm/Passes/PassPlugin.h>
 #include <llvm/IR/InstIterator.h>

@@ -15,7 +15,6 @@
 
 #include "Common/clambc.h"
 #include "Common/ClamBCUtilities.h"
-#include "Common/ClamBCModule.h"
 using namespace llvm;
 
 #include <set>

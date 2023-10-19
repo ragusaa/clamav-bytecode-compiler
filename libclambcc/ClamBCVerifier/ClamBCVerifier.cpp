@@ -43,7 +43,6 @@
 
 
 #include "Common/ClamBCDiagnostics.h"
-#include "Common/ClamBCModule.h"
 #include "Common/clambc.h"
 #include "Common/ClamBCUtilities.h"
 
