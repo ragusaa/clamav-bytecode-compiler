@@ -45,6 +45,7 @@ int64_t computeOffsetInBytes(llvm::Module * pMod, llvm::Type *pst);
 
 llvm::Type *findTypeAtIndex(llvm::Type *pst, llvm::ConstantInt *ciIdx);
 
+llvm::Type * getResultType(llvm::Value * pVal);
 
 
 

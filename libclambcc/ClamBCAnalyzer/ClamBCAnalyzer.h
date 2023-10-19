@@ -257,20 +257,22 @@ class ClamBCAnalysis
 
 class ClamBCAnalyzer : public llvm::AnalysisInfoMixin<ClamBCAnalyzer> //llvm::ModulePass
 {
+    protected:
+            ClamBCAnalysis clamBCAnalysis;
+
     public:
         friend llvm::AnalysisInfoMixin<ClamBCAnalyzer> ;
         static llvm::AnalysisKey Key;
 
-        ClamBCAnalyzer(){}
+        ClamBCAnalyzer() : clamBCAnalysis() {}
         virtual ~ClamBCAnalyzer(){}
 
         typedef ClamBCAnalysis Result;
 
-        ClamBCAnalysis & run(llvm::Module & mod, llvm::ModuleAnalysisManager & mam){
-            ClamBCAnalysis ret;
-            ret.run(mod);
+        ClamBCAnalysis & run(llvm::Module & mod, llvm::ModuleAnalysisManager & mam) {
+            clamBCAnalysis.run(mod);
 
-            return ret;
+            return clamBCAnalysis;
         }
 };
 

@@ -168,16 +168,29 @@ void ClamBCAnalysis::run(Module & m)
                 }
                 Type *IP8Ty = PointerType::getUnqual(Type::getInt8Ty(CE->getContext()));
 
+#if 0
                 Type *type = CE->getOperand(0)->getType();
                 if (llvm::isa<PointerType>(type)) {
 #if 0
                     type = llvm::cast<PointerType>(type)->getElementType();
 #else
-                    llvm::errs() << "<" << __LINE__ << ">" << "https://llvm.org/docs/OpaquePointers.html" << "<END>\n";
-                    llvm::errs() << "<" << __LINE__ << ">" << *CE << "<END>\n";
-                    assert (0 && "FIGURE OUT WHAT TO DO HERE");
+                    if (llvm::isa<GEPOperator>(CE)){
+                        GEPOperator * pgep = llvm::cast<GEPOperator>(CE);
+                        type = pgep->getPointerOperandType();
+                    } else if (llvm::isa<BitCastOperator>(CE)){
+                        BitCastOperator
+                    } else {
+                        llvm::errs() << "<" << __LINE__ << ">" << "https://llvm.org/docs/OpaquePointers.html" << "<END>\n";
+                        llvm::errs() << "<" << __LINE__ << ">" << *CE << "<END>\n";
+                        assert (0 && "FIGURE OUT WHAT TO DO HERE");
+                    }
 #endif
+
                 }
+#else
+                Type * type = getResultType(CE);
+#endif
+
                 uint64_t idx = dataLayout.getIndexedOffsetInType(type, indices);
 
                 Value *Idxs[1];

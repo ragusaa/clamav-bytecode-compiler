@@ -245,3 +245,44 @@ Type *findTypeAtIndex(Type *pst, ConstantInt *ciIdx)
     }
     return ret;
 }
+
+
+/*Only pass in either ConstantExpr or */
+Type * getResultType(Value * pVal){
+
+    Type *type = nullptr;
+
+    if (llvm::isa<ConstantExpr>(pVal)){
+        ConstantExpr * pce = llvm::cast<ConstantExpr>(pVal);
+        type = pce->getOperand(0)->getType();
+    } else if ( llvm::isa<Instruction>(pVal)){
+        Instruction * pInst = llvm::cast<Instruction>(pVal);
+        type = pInst->getOperand(0)->getType();
+    } else {
+        assert (0 && "This function must be called with either Instruction or a ConstantExpr");
+        return nullptr;
+    }
+
+    if (llvm::isa<PointerType>(type)) {
+        if (llvm::isa<GEPOperator>(pVal)){
+            GEPOperator * pgep = llvm::cast<GEPOperator>(pVal);
+            type = pgep->getPointerOperandType();
+        } else if (llvm::isa<GetElementPtrInst>(pVal)){
+            GetElementPtrInst * pInst = llvm::cast<GetElementPtrInst>(pVal);
+            type = pInst->getPointerOperandType();
+        } else if (llvm::isa<BitCastOperator>(pVal)){
+            BitCastOperator * pbco = llvm::cast<BitCastOperator>(pVal);
+            type = pbco->getDestTy();
+        } else if (llvm::isa<BitCastInst>(pVal)){
+            BitCastInst * pInst = llvm::cast<BitCastInst>(pVal);
+            type = pInst->getDestTy();
+        } else {
+            llvm::errs() << "<" << __LINE__ << ">" << "https://llvm.org/docs/OpaquePointers.html" << "<END>\n";
+            llvm::errs() << "<" << __LINE__ << ">" << *pVal << "<END>\n";
+            assert (0 && "FIGURE OUT WHAT TO DO HERE");
+        }
+    }
+
+    return type;
+}
+
