@@ -19,9 +19,9 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  *  MA 02110-1301, USA.
  */
-#include "ClamBCModule.h"
-#include "ClamBCUtilities.h"
-#include "clambc.h"
+#include "ClamBCRegAlloc.h"
+#include "Common/ClamBCUtilities.h"
+#include "Common/clambc.h"
 
 #include <llvm/IR/Dominators.h>
 //#include "llvm/Analysis/LiveValues.h"

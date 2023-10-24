@@ -1,16 +1,15 @@
 # Copyright (C) 2021 Cisco Systems, Inc. and/or its affiliates. All rights reserved.
 
 #
-# The clambccommon object library
+# The clambcregalloc object library
 #
-add_library(clambccommon_obj OBJECT)
-target_sources(clambccommon_obj
+add_library(clambcregalloc_obj OBJECT)
+target_sources(clambcregalloc_obj
     PRIVATE
-        ClamBCDiagnostics.cpp
-        ClamBCUtilities.cpp
+        ClamBCRegAlloc.cpp
 )
 
-target_include_directories(clambccommon_obj
+target_include_directories(clambcregalloc_obj
     PRIVATE
         ${CMAKE_BINARY_DIR} # For clambc-version.h (generated file)
         .                   # For Common/clambc.h
@@ -18,35 +17,35 @@ target_include_directories(clambccommon_obj
         ${LLVM_INCLUDE_DIRS}
 )
 
-set_target_properties(clambccommon_obj PROPERTIES COMPILE_FLAGS "${WARNCXXFLAGS}")
+set_target_properties(clambcregalloc_obj PROPERTIES COMPILE_FLAGS "${WARNCXXFLAGS}")
 
 #
 # For testing
 #
-#target_compile_definitions(clambccommon_obj -DLOG_BEFORE_AFTER=1)
+#target_compile_definitions(clambcregalloc_obj -DLOG_BEFORE_AFTER=1)
 
 #
-# The clambccommon shared library.
+# The clambcregalloc shared library.
 #
-add_library( clambccommon SHARED )
-target_link_libraries( clambccommon
+add_library( clambcregalloc SHARED )
+target_link_libraries( clambcregalloc
     PUBLIC
-        clambccommon_obj )
-set_target_properties( clambccommon PROPERTIES
+        clambcregalloc_obj )
+set_target_properties( clambcregalloc PROPERTIES
     VERSION ${LIBCLAMBC_VERSION}
     SOVERSION ${LIBCLAMBC_SOVERSION} )
 
-target_link_directories(clambccommon PRIVATE ${LLVM_LIBRARY_DIRS})
-target_link_libraries(clambccommon PUBLIC ${LLVM_LIBS})
+target_link_directories(clambcregalloc PRIVATE ${LLVM_LIBRARY_DIRS})
+target_link_libraries(clambcregalloc PUBLIC ${LLVM_LIBS})
 
 if(WIN32)
-    install(TARGETS clambccommon DESTINATION .)
+    install(TARGETS clambcregalloc DESTINATION .)
 
     # Also install shared library (DLL) dependencies
     install(CODE [[
         file(GET_RUNTIME_DEPENDENCIES
             LIBRARIES
-                $<TARGET_FILE:clambccommon>
+                $<TARGET_FILE:clambcregalloc>
             RESOLVED_DEPENDENCIES_VAR _r_deps
             UNRESOLVED_DEPENDENCIES_VAR _u_deps
             DIRECTORIES
@@ -66,7 +65,7 @@ if(WIN32)
         #message("UNRESOLVED_DEPENDENCIES_VAR: ${_u_deps}")
     ]])
 else()
-    install(TARGETS clambccommon DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(TARGETS clambcregalloc DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 
 

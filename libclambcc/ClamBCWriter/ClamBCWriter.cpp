@@ -21,8 +21,8 @@
  */
 #include "Common/bytecode_api.h"
 #include "Common/clambc.h"
-#include "Common/ClamBCModule.h"
 #include "ClamBCAnalyzer/ClamBCAnalyzer.h"
+#include "ClamBCRegAlloc/ClamBCRegAlloc.h"
 #include "Common/ClamBCUtilities.h"
 
 #include <llvm/Support/DataTypes.h>
@@ -917,8 +917,15 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 #if 0
         RA = &getAnalysis<ClamBCRegAlloc>(F);
 #else
-        ClamBCRegAllocAnalysis & clamBCRegAllocAnalysis     = pModuleAnalysysManager->getResult<ClamBCRegAllocAnalyzer>(*pMod);
-        RA = &clamBCRegAllocAnalysis;
+
+
+        FunctionAnalysisManager &fam = pModuleAnalysysManager->getResult<FunctionAnalysisManagerModuleProxy>(*pMod).getManager();
+
+        RA = &fam.getResult<ClamBCRegAllocAnalyzer>(F);
+
+
+
+
 #endif
         printFunction(F);
         if (Dumper) {

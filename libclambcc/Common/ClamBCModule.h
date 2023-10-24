@@ -179,6 +179,7 @@ class ClamBCModule : public llvm::ModulePass
 };
 #endif
 
+#if 0
 //class ClamBCRegAlloc : public llvm::FunctionPass
 class ClamBCRegAllocAnalysis 
 {
@@ -248,6 +249,8 @@ class ClamBCRegAllocAnalyzer : public llvm::AnalysisInfoMixin<ClamBCRegAllocAnal
                 return clamBCRegAllocAnalysis;
             }
 };
+
+#endif
 
 #if 0
 llvm::ModulePass *createClamBCWriter();
