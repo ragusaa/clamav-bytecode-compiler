@@ -31,6 +31,8 @@
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/Support/FormattedStream.h>
 #include <llvm/IR/Dominators.h>
+#include <llvm/Passes/PassPlugin.h>
+#include <llvm/Passes/PassBuilder.h>
 
 #include <vector>
 #include <map>
@@ -38,7 +40,7 @@
 #include "clambc.h"
 
 class ClamBCWriter;
-class ClamBCRegAlloc;
+class ClamBCRegAllocAnalyzer;
 
 #if 0
 class ClamBCModule : public llvm::ModulePass
@@ -177,12 +179,13 @@ class ClamBCModule : public llvm::ModulePass
 };
 #endif
 
-class ClamBCRegAlloc : public llvm::FunctionPass
+//class ClamBCRegAlloc : public llvm::FunctionPass
+class ClamBCRegAllocAnalysis 
 {
   public:
     static char ID;
-    explicit ClamBCRegAlloc()
-        : FunctionPass(ID) {}
+    explicit ClamBCRegAllocAnalysis()
+        /* : FunctionPass(ID) */ {}
 
     unsigned buildReverseMap(std::vector<const llvm::Value *> &);
     bool skipInstruction(const llvm::Instruction *I) const
@@ -207,6 +210,10 @@ class ClamBCRegAlloc : public llvm::FunctionPass
     void dump() const;
     void revdump() const;
 
+    virtual void setDominatorTree(llvm::DominatorTree* dt){
+        DT = dt;
+    }
+
   private:
     void handlePHI(llvm::PHINode *PN);
     typedef llvm::DenseMap<const llvm::Value *, unsigned> ValueIDMap;
@@ -214,8 +221,35 @@ class ClamBCRegAlloc : public llvm::FunctionPass
     std::vector<const llvm::Value *> RevValueMap;
     llvm::DenseSet<const llvm::Instruction *> SkipMap;
     llvm::DominatorTree *DT;
+
 };
 
+class ClamBCRegAllocAnalyzer : public llvm::AnalysisInfoMixin<ClamBCRegAllocAnalyzer> {
+
+    protected:
+        ClamBCRegAllocAnalysis clamBCRegAllocAnalysis; 
+
+        public: 
+
+        ClamBCRegAllocAnalyzer (){}
+        virtual ~ClamBCRegAllocAnalyzer (){}
+
+            friend AnalysisInfoMixin<ClamBCRegAllocAnalyzer> ;
+            static llvm::AnalysisKey Key;
+            typedef ClamBCRegAllocAnalysis Result;
+
+            ClamBCRegAllocAnalysis & run(llvm::Function & F, llvm::FunctionAnalysisManager & fam){
+
+                llvm::DominatorTree & dt = fam.getResult<llvm::DominatorTreeAnalysis>(F);
+                clamBCRegAllocAnalysis.setDominatorTree(&dt);
+                clamBCRegAllocAnalysis.runOnFunction(F);
+                clamBCRegAllocAnalysis.setDominatorTree(NULL);
+
+                return clamBCRegAllocAnalysis;
+            }
+};
+
+#if 0
 llvm::ModulePass *createClamBCWriter();
 llvm::Pass *createClamBCRTChecks();
 llvm::FunctionPass *createClamBCVerifier(bool final);
@@ -225,3 +259,5 @@ llvm::ModulePass *createClamBCTrace();
 llvm::ModulePass *createClamBCRebuild();
 extern const llvm::PassInfo *const ClamBCRegAllocID;
 #endif
+#endif //CLAMBC_MODULE_H
+

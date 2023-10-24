@@ -45,8 +45,11 @@ using namespace llvm;
 // targets with fixed number of registers, and a much simpler allocator
 // suffices for us.
 
+
+llvm::AnalysisKey Key;
+
 /*TODO: Should rework this so that we are not changing things with open iterators.*/
-void ClamBCRegAlloc::handlePHI(PHINode *PN)
+void ClamBCRegAllocAnalysis::handlePHI(PHINode *PN)
 {
     BasicBlock *BB = PN->getIncomingBlock(0);
     for (unsigned i = 1; i < PN->getNumIncomingValues(); i++) {
@@ -88,11 +91,13 @@ void ClamBCRegAlloc::handlePHI(PHINode *PN)
     PN->eraseFromParent();
 }
 
-bool ClamBCRegAlloc::runOnFunction(Function &F)
+bool ClamBCRegAllocAnalysis::runOnFunction(Function &F)
 {
     ValueMap.clear();
     RevValueMap.clear();
+#if 0
     DT           = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();
+#endif
     bool Changed = false;
     for (Function::iterator I = F.begin(), E = F.end(); I != E; ++I) {
         BasicBlock &BB         = *I;
@@ -220,7 +225,7 @@ bool ClamBCRegAlloc::runOnFunction(Function &F)
     return Changed;
 }
 
-void ClamBCRegAlloc::dump() const
+void ClamBCRegAllocAnalysis::dump() const
 {
     for (ValueIDMap::const_iterator I = ValueMap.begin(), E = ValueMap.end();
          I != E; ++I) {
@@ -228,7 +233,7 @@ void ClamBCRegAlloc::dump() const
     }
 }
 
-void ClamBCRegAlloc::revdump() const
+void ClamBCRegAllocAnalysis::revdump() const
 {
     for (unsigned i = 0; i < RevValueMap.size(); ++i) {
         errs() << i << ": ";
@@ -237,7 +242,7 @@ void ClamBCRegAlloc::revdump() const
     }
 }
 
-unsigned ClamBCRegAlloc::buildReverseMap(std::vector<const Value *> &reverseMap)
+unsigned ClamBCRegAllocAnalysis::buildReverseMap(std::vector<const Value *> &reverseMap)
 {
     // Check using the older building code to determine changes due to building difference
     // Note: this code can be removed if necessary
@@ -269,7 +274,7 @@ unsigned ClamBCRegAlloc::buildReverseMap(std::vector<const Value *> &reverseMap)
     return RevValueMap.size();
 }
 
-void ClamBCRegAlloc::getAnalysisUsage(AnalysisUsage &AU) const
+void ClamBCRegAllocAnalysis::getAnalysisUsage(AnalysisUsage &AU) const
 {
     AU.addRequired<DominatorTreeWrapperPass>();
 
@@ -277,8 +282,33 @@ void ClamBCRegAlloc::getAnalysisUsage(AnalysisUsage &AU) const
     // loads/stores.
     AU.setPreservesCFG();
 }
-char ClamBCRegAlloc::ID = 0;
+
+
+
+#if 0
+char ClamBCRegAllocAnalysis::ID = 0;
 static RegisterPass<ClamBCRegAlloc> X("clambc-ra",
                                       "ClamAV bytecode register allocator");
 
 const PassInfo *const ClamBCRegAllocID = &X;
+#else
+
+
+// This part is the new way of registering your pass
+extern "C" ::llvm::PassPluginLibraryInfo LLVM_ATTRIBUTE_WEAK
+llvmGetPassPluginInfo() {
+  return {
+    LLVM_PLUGIN_API_VERSION, "ClamBCRegAlloc", "v0.1",
+    [](PassBuilder &PB) {
+                PB.registerAnalysisRegistrationCallback(
+                        [](FunctionAnalysisManager &mam) {
+                            mam.registerPass([] () { return ClamBCRegAllocAnalyzer(); } );
+                        }
+                        );
+    }
+  };
+}
+
+
+
+#endif

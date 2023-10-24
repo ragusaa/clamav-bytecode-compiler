@@ -717,7 +717,7 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
     unsigned opcodecvt[Instruction::OtherOpsEnd];
     raw_ostream *MapOut  = nullptr;
     FunctionPass *Dumper = nullptr;
-    ClamBCRegAlloc *RA   = nullptr;
+    ClamBCRegAllocAnalysis *RA   = nullptr;
     unsigned fid, minflvl;
     //MetadataContext *TheMetadata = nullptr;
     unsigned MDDbgKind;
@@ -727,6 +727,7 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
     llvm::Module *pMod                = nullptr;
     ClamBCOutputWriter *pOutputWriter = nullptr;
     ClamBCAnalysis *pAnalyzer         = nullptr;
+    ModuleAnalysisManager * pModuleAnalysysManager = nullptr;
 
   public:
     static char ID;
@@ -782,6 +783,7 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
         DEBUGERR << "TODO: Remove InstVisitor stuff" << "<END>\n";
 
         pMod          = &m;
+        pModuleAnalysysManager = &MAM;
 #if 0
         pAnalyzer     = &getAnalysis<ClamBCAnalyzer>();
 #else
@@ -915,12 +917,15 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 #if 0
         RA = &getAnalysis<ClamBCRegAlloc>(F);
 #else
-        assert (0 && "Convert ClamBCRegAlloc analysis");
+        ClamBCRegAllocAnalysis & clamBCRegAllocAnalysis     = pModuleAnalysysManager->getResult<ClamBCRegAllocAnalyzer>(*pMod);
+        RA = &clamBCRegAllocAnalysis;
 #endif
         printFunction(F);
         if (Dumper) {
             Dumper->runOnFunction(F);
         }
+
+        RA = nullptr;
         return false;
     }
 
