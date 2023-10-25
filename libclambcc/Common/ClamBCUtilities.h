@@ -47,6 +47,7 @@ llvm::Type *findTypeAtIndex(llvm::Type *pst, llvm::ConstantInt *ciIdx);
 
 llvm::Type * getResultType(llvm::Value * pVal);
 
+llvm::Type * getPointerElementType(const llvm::Module * const pMod, const llvm::PointerType * const pType) ;
 
 
 #endif // CLAMBC_UTILITIES_H_

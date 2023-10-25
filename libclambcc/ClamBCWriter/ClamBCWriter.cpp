@@ -330,10 +330,8 @@ class ClamBCOutputWriter
 #if 0
             const Type *ETy = PTy->getElementType();
 #else
-            DEBUG_VALUE(Ty);
-            assert (0 && 
-                    "Figure out what to do here");
-            const Type *ETy = nullptr;
+
+            const Type * ETy = getPointerElementType(pMod, PTy);
 #endif
             // pointers to opaque types are treated as i8*
             int id = -1;

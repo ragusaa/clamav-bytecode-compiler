@@ -6,6 +6,7 @@
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/Operator.h>
+#include <llvm/IR/TypeFinder.h>
 
 using namespace llvm;
 
@@ -263,10 +264,7 @@ Type * getResultType(Value * pVal){
         return nullptr;
     }
 
-    DEBUG_VALUE(type);
-
     if (llvm::isa<PointerType>(type)) {
-        DEBUG_WHERE;
         if (llvm::isa<GEPOperator>(pVal)){
             GEPOperator * pgep = llvm::cast<GEPOperator>(pVal);
             type = pgep->getSourceElementType();
@@ -288,5 +286,45 @@ Type * getResultType(Value * pVal){
     }
 
     return type;
+}
+
+Type * testType(Type * test, const PointerType  * const pType){
+    Type * t = test;
+        Type * last = t;
+        for (size_t j = 0; j < 3; j++){
+            t = PointerType::get(test, pType->getAddressSpace());
+            if (t == pType){
+                return last;
+            }
+            last = t;
+        }
+        return nullptr;
+}
+
+Type * getPointerElementType(const llvm::Module * const pMod, const PointerType * const pType) {
+    if (not pType->isPointerTy()){
+        assert (0 && "Not a pointer");
+    }
+
+    for (size_t i = 1; i < 65; i++){
+        Type * t = IntegerType::getIntNTy(pMod->getContext(), i);
+        Type * ret = testType(t, pType);
+        if (nullptr != ret){
+            return ret;
+        }
+    }
+
+    TypeFinder tf;
+    tf.run(*pMod, false);
+    for (auto *type : tf){
+        Type * ret = testType(type, pType);
+        if (nullptr != ret){
+            return ret;
+        }
+    }
+
+    assert (0 && "NEED TO LOOK AT MORE TYPES");
+
+    return nullptr;
 }
 
