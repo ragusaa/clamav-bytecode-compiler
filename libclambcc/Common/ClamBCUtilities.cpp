@@ -247,7 +247,7 @@ Type *findTypeAtIndex(Type *pst, ConstantInt *ciIdx)
 }
 
 
-/*Only pass in either ConstantExpr or */
+/*Only pass in either ConstantExpr or Instruction */
 Type * getResultType(Value * pVal){
 
     Type *type = nullptr;

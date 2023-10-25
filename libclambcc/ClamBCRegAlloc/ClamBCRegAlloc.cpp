@@ -137,11 +137,14 @@ bool ClamBCRegAllocAnalysis::runOnFunction(Function &F)
             ValueMap[II] = ~0u;
             continue;
         }
+
+        DEBUGERR << "TODO: Move these checks to the verifier" << "<END>\n";
         if (CastInst *BC = dyn_cast<CastInst>(II)) {
             if (BitCastInst *BCI = dyn_cast<BitCastInst>(BC)) {
                 if (!BCI->isLosslessCast()) {
                     ClamBCStop("Non lossless bitcast is not supported", BCI);
                 }
+#if 0
                 const Type *SrcTy = BC->getOperand(0)->getType();
                 const Type *DstTy = BC->getType();
                 const PointerType *SPTy, *DPTy;
@@ -156,7 +159,13 @@ bool ClamBCRegAllocAnalysis::runOnFunction(Function &F)
                     DstTy = DPTy->getElementType();
 #else
 
-                    assert (0 && "removed deprecated getPointerElementType calls");
+                    llvm::errs() << "\n\n\n";
+                    DEBUG_VALUE(BCI);
+                    DEBUG_VALUE(BCI->getOperand(0));
+
+
+                    DEBUGERR << "EXITING" << "<END>\n";
+                    exit(1);
 
 
                     /*Don't expect any issues with this change.*/
@@ -165,6 +174,13 @@ bool ClamBCRegAllocAnalysis::runOnFunction(Function &F)
 
 #endif
                 }
+#else
+                if (BCI->getSrcTy()->isPointerTy() and (not BCI->getDestTy()->isPointerTy())){
+                    ClamBCStop("Cast from pointer to non-pointer element",
+                               BCI);
+                }
+
+#endif
 
                 if (AllocaInst *AI = dyn_cast<AllocaInst>(BCI->getOperand(0))) {
                     if (!AI->isArrayAllocation()) {
@@ -182,6 +198,9 @@ bool ClamBCRegAllocAnalysis::runOnFunction(Function &F)
                 SkipMap.insert(II);
                 ValueMap[II] = getValueID(II->getOperand(0));
                 continue;
+            } else if (llvm::isa<PtrToIntInst>(BC) or llvm::isa<IntToPtrInst>(BC)){
+                    ClamBCStop("Cast from pointer to non-pointer element",
+                               BCI);
             }
         }
         if (II->hasOneUse()) {
