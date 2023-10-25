@@ -315,15 +315,13 @@ DEBUG_VALUE(pn->getParent()->getParent());
         PointerType * pPointerType = llvm::dyn_cast<PointerType>(pBasePtr->getType());
         assert (pPointerType && "How is this possible");
         Type * pGEPType = getGEPTypeFromPointerType(pn->getParent()->getParent()->getParent(), pPointerType);
-        DEBUG_VALUE(pGEPType);
-        exit(11);
 #endif
 
 
 
 //DEBUG_NONPOINTER(pBasePtr->getType()->getScalarType())->isOpaqueOrPointeeTypeMatches();
 
-        Instruction *gepiNew = GetElementPtrInst::Create(pBasePtr->getType(), pBasePtr, idxNode, "ClamBCRemovePointerPHIs_gepi_", insPt);
+        Instruction *gepiNew = GetElementPtrInst::Create(pGEPType, pBasePtr, idxNode, "ClamBCRemovePointerPHIs_gepi_", insPt);
 DEBUG_WHERE;
         if (pn->getType() != gepiNew->getType()) {
             gepiNew = CastInst::CreatePointerCast(gepiNew, pn->getType(), "ClamBCRemovePointerPHIs_cast_", insPt);
