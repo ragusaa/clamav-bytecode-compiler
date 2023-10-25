@@ -46,7 +46,7 @@ using namespace llvm;
 // suffices for us.
 
 
-llvm::AnalysisKey Key;
+llvm::AnalysisKey ClamBCRegAllocAnalyzer::Key;
 
 /*TODO: Should rework this so that we are not changing things with open iterators.*/
 void ClamBCRegAllocAnalysis::handlePHI(PHINode *PN)
