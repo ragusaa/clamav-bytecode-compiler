@@ -49,10 +49,10 @@ namespace
 
     };
 
-    class ExampleAnalysis : public AnalysisInfoMixin<ExampleAnalysis > 
+    class ExampleAnalysis : public AnalysisInfoMixin<ExampleAnalysis >
     {
 
-        public: 
+        public:
 
         friend AnalysisInfoMixin<ExampleAnalysis > ;
             static AnalysisKey Key;
@@ -64,7 +64,7 @@ namespace
         typedef AnalysisResult Result;
 
         AnalysisResult run(llvm::Module & F, llvm::ModuleAnalysisManager & fam){
-            
+
             llvm::errs() << "<" << "Analysis::" << __LINE__ << ">" << "<END>\n";
             return AnalysisResult();
 
@@ -72,9 +72,41 @@ namespace
 
     };
 
-    AnalysisKey ExampleAnalysis::Key;
+    class FunctionAnalysisResult {
+        public:
+            FunctionAnalysisResult(){
+                llvm::errs() << "<" << __FUNCTION__ << "::" << __LINE__ << ">" << "<END>\n";
+            }
 
-    struct ExamplePass : public PassInfoMixin<ExamplePass > 
+    };
+
+    class ExampleFunctionAnalysis : public AnalysisInfoMixin<ExampleFunctionAnalysis >
+    {
+
+        public:
+
+        friend AnalysisInfoMixin<ExampleFunctionAnalysis > ;
+            static AnalysisKey Key;
+
+
+        ExampleFunctionAnalysis(){
+        }
+
+        typedef FunctionAnalysisResult Result;
+
+        FunctionAnalysisResult run(llvm::Function & F, llvm::FunctionAnalysisManager & fam){
+
+            llvm::errs() << "<" << "Function Analysis::" << __LINE__ << ">" << "<END>\n";
+            return FunctionAnalysisResult();
+
+        }
+
+    };
+
+    AnalysisKey ExampleAnalysis::Key;
+    AnalysisKey ExampleFunctionAnalysis::Key;
+
+    struct ExamplePass : public PassInfoMixin<ExamplePass >
     {
         protected:
             Module *pMod = nullptr;
@@ -89,13 +121,24 @@ namespace
                 pMod = &m;
                 llvm::errs() << "<" << __FUNCTION__ << "::" << __LINE__ << ">" << "Transform Pass" << "<END>\n";
 
+                FunctionAnalysisManager &fam = MAM.getResult<FunctionAnalysisManagerModuleProxy>(*pMod).getManager();
+
                 MAM.getResult<ExampleAnalysis>(m);
+                for (auto i = pMod->begin(), e = pMod->end(); i != e; i++){
+                    if (Function * pFunc = llvm::dyn_cast<Function>(i)){
+                        fam.getResult<ExampleFunctionAnalysis>(*pFunc);
+                    }
+                }
 
                 llvm::errs() << "<" << __FUNCTION__ << "::" << __LINE__ << ">" << "Transform Pass (leaving)" << "<END>\n";
 
                 return PreservedAnalyses::all();
             }
     }; // end of struct ExamplePass
+
+
+
+
 
 } // end of anonymous namespace
 
@@ -119,6 +162,12 @@ llvmGetPassPluginInfo() {
                 PB.registerAnalysisRegistrationCallback(
                         [](ModuleAnalysisManager &mam) {
                             mam.registerPass([] () { return ExampleAnalysis(); } );
+                        }
+                        );
+
+                PB.registerAnalysisRegistrationCallback(
+                        [](FunctionAnalysisManager &mam) {
+                            mam.registerPass([] () { return ExampleFunctionAnalysis(); } );
                         }
                         );
             }
