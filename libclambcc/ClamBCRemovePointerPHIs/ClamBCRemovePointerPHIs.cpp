@@ -7,8 +7,10 @@
 #include <llvm/Analysis/ValueTracking.h>
 #include <llvm/Passes/PassPlugin.h>
 #include <llvm/Passes/PassBuilder.h>
+#include <llvm/IR/TypedPointerType.h>
 
 #include <llvm/IR/Dominators.h>
+#include <llvm/IR/TypeFinder.h>
 
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
@@ -18,6 +20,46 @@
 using namespace llvm;
 
 #include <set>
+
+Type * testType(Type * test, PointerType  * pType){
+    Type * t = test;
+        Type * last = t;
+        for (size_t j = 0; j < 3; j++){
+            t = PointerType::get(test, pType->getAddressSpace());
+            if (t == pType){
+                return last;
+            }
+            last = t;
+        }
+        return nullptr;
+}
+
+Type * getGEPTypeFromPointerType(llvm::Module * pMod, PointerType * pType) {
+    if (not pType->isPointerTy()){
+        assert (0 && "Not a pointer");
+    }
+
+    for (size_t i = 1; i < 65; i++){
+        Type * t = IntegerType::getIntNTy(pMod->getContext(), i);
+        Type * ret = testType(t, pType);
+        if (nullptr != ret){
+            return ret;
+        }
+    }
+
+    TypeFinder tf;
+    tf.run(*pMod, false);
+    for (auto *type : tf){
+        Type * ret = testType(type, pType);
+        if (nullptr != ret){
+            return ret;
+        }
+    }
+
+    assert (0 && "NEED TO LOOK AT MORE TYPES");
+
+    return nullptr;
+}
 
 namespace ClamBCRemovePointerPHIs
 {
@@ -205,6 +247,9 @@ class ClamBCRemovePointerPHIs : public PassInfoMixin<ClamBCRemovePointerPHIs>
                 continue;
             }
 
+            DEBUG_VALUE(pn->getIncomingValue(i));
+            DEBUG_VALUE(incoming);
+
             if (GetElementPtrInst *p = llvm::dyn_cast<GetElementPtrInst>(pn->getIncomingValue(i))) {
                 //Replace initValue with the index operand of the GetElementPtrInst here.
                 for (auto idx = p->idx_begin(), idxe = p->idx_end(); idx != idxe; idx++) {
@@ -222,12 +267,64 @@ class ClamBCRemovePointerPHIs : public PassInfoMixin<ClamBCRemovePointerPHIs>
             }
         }
 
-        assert(0 < idxNode->getNumIncomingValues() && "Did not find the pointer");
+        assert((0 < idxNode->getNumIncomingValues()) && "Did not find the pointer");
 
         std::vector<Instruction *> newInsts;
         Instruction *insPt = findFirstNonPHI(pn->getParent());
 
+#if 0
+DEBUG_WHERE;
+DEBUG_VALUE(pBasePtr);
+DEBUG_VALUE(pBasePtr->getType());
+DEBUG_NONPOINTER(isa<TypedPointerType>(pBasePtr->getType()));
+Type * st = pBasePtr->getType()->getScalarType();
+DEBUG_VALUE(st);
+DEBUG_NONPOINTER(cast<PointerType>(st)->isOpaqueOrPointeeTypeMatches(pBasePtr->getType()));
+DEBUG_VALUE(pn);
+DEBUG_VALUE(pn->getType());
+DEBUG_VALUE(pn->getParent()->getParent());
+
+{
+    Module * pMod = pn->getParent()->getParent()->getParent();
+    for (auto i = pMod->begin(), e = pMod->end(); i != e; i++){
+        DEBUG_VALUE(i);
+    }
+
+    TypeFinder tf;
+    tf.run(*pMod, false);
+    for (auto *type : tf){
+        DEBUG_VALUE(type);
+
+//        Type * andy = PointerType::get(type, 0);
+//        Type * andy2 = PointerType::get(type, 0);
+
+    }
+
+
+        std::set<llvm::Instruction *> insts;
+        std::set<llvm::GlobalVariable *> globs;
+        for (auto i : insts) {
+            DEBUG_VALUE(i);
+        }
+
+        DEBUG_NONPOINTER((pn->getType() == Type::getInt8PtrTy(pMod->getContext())));
+
+
+}
+#else
+        PointerType * pPointerType = llvm::dyn_cast<PointerType>(pBasePtr->getType());
+        assert (pPointerType && "How is this possible");
+        Type * pGEPType = getGEPTypeFromPointerType(pn->getParent()->getParent()->getParent(), pPointerType);
+        DEBUG_VALUE(pGEPType);
+        exit(11);
+#endif
+
+
+
+//DEBUG_NONPOINTER(pBasePtr->getType()->getScalarType())->isOpaqueOrPointeeTypeMatches();
+
         Instruction *gepiNew = GetElementPtrInst::Create(pBasePtr->getType(), pBasePtr, idxNode, "ClamBCRemovePointerPHIs_gepi_", insPt);
+DEBUG_WHERE;
         if (pn->getType() != gepiNew->getType()) {
             gepiNew = CastInst::CreatePointerCast(gepiNew, pn->getType(), "ClamBCRemovePointerPHIs_cast_", insPt);
         }

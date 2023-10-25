@@ -53,6 +53,8 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Transforms/Scalar.h>
 
+#include <llvm/IR/TypedPointerType.h>
+
 #include <llvm/Analysis/CallGraph.h>
 #include <llvm/Support/MemoryBuffer.h>
 

@@ -34,6 +34,7 @@
 #include <llvm/IR/Module.h>
 #include <llvm/Pass.h>
 #include <llvm/IR/InstIterator.h>
+#include <llvm/IR/TypedPointerType.h>
 
 using namespace llvm;
 // We do have a virtually unlimited number of registers, but it is more cache
@@ -162,6 +163,8 @@ bool ClamBCRegAllocAnalysis::runOnFunction(Function &F)
                     llvm::errs() << "\n\n\n";
                     DEBUG_VALUE(BCI);
                     DEBUG_VALUE(BCI->getOperand(0));
+                    DEBUG_NONPOINTER(llvm::isa<TypedPointerType>(SrcTy));
+                    DEBUG_NONPOINTER(llvm::isa<TypedPointerType>(DstTy));
 
 
                     DEBUGERR << "EXITING" << "<END>\n";
