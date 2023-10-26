@@ -120,6 +120,11 @@ namespace {
             virtual void loadTypes(llvm::Module * pMod){
                 loadTypesFromDefinitions(pMod);
                 loadTypesFromVariables(pMod);
+
+    for (size_t i = 1; i < 65; i++){
+        Type * t = IntegerType::getIntNTy(pMod->getContext(), i);
+        insertType(t);
+    }
             }
 
             virtual llvm::Type * getPointerElementType(

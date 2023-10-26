@@ -801,7 +801,6 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 #endif
         clamBCTypeAnalysis = &mam.getResult<ClamBCTypeAnalyzer>(m);
 
-
         pOutputWriter = ClamBCOutputWriter::createClamBCOutputWriter(outFile, pMod, pAnalyzer);
 
         for (auto i = pMod->begin(), e = pMod->end(); i != e; i++) {
