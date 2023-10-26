@@ -24,6 +24,7 @@
 #include "ClamBCAnalyzer/ClamBCAnalyzer.h"
 #include "ClamBCRegAlloc/ClamBCRegAlloc.h"
 #include "Common/ClamBCUtilities.h"
+#include "ClamBCTypeAnalyzer/ClamBCTypeAnalyzer.h"
 
 #include <llvm/Support/DataTypes.h>
 #include <llvm/ADT/STLExtras.h>
@@ -331,7 +332,13 @@ class ClamBCOutputWriter
             const Type *ETy = PTy->getElementType();
 #else
 
-            const Type * ETy = getPointerElementType(pMod, PTy);
+            DEBUG_WHERE;
+
+
+            DEBUGERR << "need analysis pass to store all types in the module;" << "<END>\n";
+
+
+            const Type * ETy = clamBCTypeAnalysis->getPointerElementType(pMod, PTy);
 #endif
             // pointers to opaque types are treated as i8*
             int id = -1;
@@ -642,6 +649,7 @@ DEBUG_VALUE(*I);
     int lastLinePos           = 0;
     llvm::Module *pMod        = nullptr;
     ClamBCAnalysis *pAnalyzer = nullptr;
+    ClamBCTypeAnalysis * clamBCTypeAnalysis = nullptr;
 
     void printFixedNumber(raw_ostream &Out, unsigned n, unsigned fixed)
     {
@@ -727,6 +735,7 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
     llvm::Module *pMod                = nullptr;
     ClamBCOutputWriter *pOutputWriter = nullptr;
     ClamBCAnalysis *pAnalyzer         = nullptr;
+    ClamBCTypeAnalysis * clamBCTypeAnalysis = nullptr;
     ModuleAnalysisManager * pModuleAnalysysManager = nullptr;
 
   public:
@@ -774,7 +783,7 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
     bool runOnModule(Module &m)
 #else
 
-    PreservedAnalyses run(Module & m, ModuleAnalysisManager & MAM)
+    PreservedAnalyses run(Module & m, ModuleAnalysisManager & mam)
 #endif
     {
         /*This used to be called as part of setup, so call it here (New Pass Manager)*/
@@ -783,13 +792,20 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
         DEBUGERR << "TODO: Remove InstVisitor stuff" << "<END>\n";
 
         pMod          = &m;
-        pModuleAnalysysManager = &MAM;
+        pModuleAnalysysManager = &mam;
 #if 0
         pAnalyzer     = &getAnalysis<ClamBCAnalyzer>();
 #else
-        ClamBCAnalysis & analysis     = MAM.getResult<ClamBCAnalyzer>(m);
+        ClamBCAnalysis & analysis     = mam.getResult<ClamBCAnalyzer>(m);
         pAnalyzer = &analysis;
 #endif
+
+#if 0
+        clamBCTypeAnalysis = &mam.getResult<ClamBCTypeAnalyzer>(m);
+#else
+        assert (0 && "re-add type analysis");
+#endif
+
         pOutputWriter = ClamBCOutputWriter::createClamBCOutputWriter(outFile, pMod, pAnalyzer);
 
         for (auto i = pMod->begin(), e = pMod->end(); i != e; i++) {
@@ -954,6 +970,7 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
     }
 
   private:
+
     void printNumber(uint64_t c, bool constant)
     {
         pOutputWriter->printNumber(c, constant);

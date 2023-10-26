@@ -18,6 +18,7 @@ add_subdirectory(ClamBCChangeMallocArgSize)
 add_subdirectory(ClamBCExtendPHIsTo64Bit)
 add_subdirectory(ClamBCRebuild)
 add_subdirectory(ClamBCRegAlloc)
+add_subdirectory(ClamBCTypeAnalyzer)
 
 
 

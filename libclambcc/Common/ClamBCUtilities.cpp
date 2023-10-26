@@ -288,6 +288,7 @@ Type * getResultType(Value * pVal){
     return type;
 }
 
+#if 0
 Type * testType(Type * test, const PointerType  * const pType){
     Type * t = test;
         Type * last = t;
@@ -323,8 +324,10 @@ Type * getPointerElementType(const llvm::Module * const pMod, const PointerType 
         }
     }
 
+    DEBUG_VALUE(pType);
     assert (0 && "NEED TO LOOK AT MORE TYPES");
 
     return nullptr;
 }
+#endif
 

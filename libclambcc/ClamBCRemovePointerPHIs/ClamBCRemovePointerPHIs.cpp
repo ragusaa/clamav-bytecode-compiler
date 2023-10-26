@@ -16,6 +16,9 @@
 
 #include "Common/clambc.h"
 #include "Common/ClamBCUtilities.h"
+#include "ClamBCTypeAnalyzer/ClamBCTypeAnalyzer.h"
+#include "ClamBCAnalyzer/ClamBCAnalyzer.h"
+
 using namespace llvm;
 
 #include <set>
@@ -25,9 +28,10 @@ namespace ClamBCRemovePointerPHIs
 class ClamBCRemovePointerPHIs : public PassInfoMixin<ClamBCRemovePointerPHIs>
 {
   protected:
-    Function *pFunc = nullptr;
+      llvm::Module * pMod = nullptr;
+ClamBCTypeAnalysis * clamBCTypeAnalysis = nullptr;
 
-    std::vector<PHINode *> gatherPHIs()
+    std::vector<PHINode *> gatherPHIs(llvm::Function * pFunc)
     {
 
         std::vector<PHINode *> ret;
@@ -187,7 +191,7 @@ class ClamBCRemovePointerPHIs : public PassInfoMixin<ClamBCRemovePointerPHIs>
             return false;
         }
 
-        IntegerType *pType = Type::getInt64Ty(pFunc->getParent()->getContext());
+        IntegerType *pType = Type::getInt64Ty(pMod->getContext());
         Constant *zero     = ConstantInt::get(pType, 0);
         Value *initValue   = zero;
         PHINode *idxNode   = PHINode::Create(pType, pn->getNumIncomingValues(), "ClamBCRemovePointerPHIs_idx_", pn);
@@ -230,7 +234,11 @@ class ClamBCRemovePointerPHIs : public PassInfoMixin<ClamBCRemovePointerPHIs>
 
         PointerType * pPointerType = llvm::dyn_cast<PointerType>(pBasePtr->getType());
         assert (pPointerType && "How is this possible");
+#if 0
         Type * pGEPType = getPointerElementType(pn->getParent()->getParent()->getParent(), pPointerType);
+#else
+        Type * pGEPType = clamBCTypeAnalysis->getPointerElementType(pn->getParent()->getParent()->getParent(), pPointerType);
+#endif
 
         Instruction *gepiNew = GetElementPtrInst::Create(pGEPType, pBasePtr, idxNode, "ClamBCRemovePointerPHIs_gepi_", insPt);
         if (pn->getType() != gepiNew->getType()) {
@@ -296,14 +304,28 @@ class ClamBCRemovePointerPHIs : public PassInfoMixin<ClamBCRemovePointerPHIs>
 #if 0
     bool runOnFunction(Function &F) override
 #else
-    virtual PreservedAnalyses run(Function & F, FunctionAnalysisManager & MAM)
+    virtual PreservedAnalyses run(Module & m, ModuleAnalysisManager & mam)
 #endif
     {
 
-        pFunc    = &F;
+        pMod = &m;
+
         bool ret = false;
 
-        std::vector<PHINode *> phis = gatherPHIs();
+#if 1
+        clamBCTypeAnalysis = &mam.getResult<ClamBCTypeAnalyzer>(m);
+#else
+        mam.getResult<ClamBCAnalyzer>(m);
+
+        DEBUGERR << "FJKDLFJDKLSJFKLJDSKLFJ" << "<END>\n";
+#endif
+
+        for (auto i = pMod->begin(), e = pMod->end(); i != e; i++){
+            llvm::Function * pFunc = llvm::dyn_cast<Function>(i);
+            if (nullptr == pFunc){
+                continue;
+            }
+        std::vector<PHINode *> phis = gatherPHIs(pFunc);
         for (size_t i = 0; i < phis.size(); i++) {
             PHINode *pn = phis[i];
 
@@ -311,6 +333,7 @@ class ClamBCRemovePointerPHIs : public PassInfoMixin<ClamBCRemovePointerPHIs>
                 ret = true;
             }
         }
+    }
 
         if (ret){
             return PreservedAnalyses::none();
@@ -335,7 +358,7 @@ llvmGetPassPluginInfo() {
     LLVM_PLUGIN_API_VERSION, "ClamBCRemovePointerPHIs", "v0.1",
     [](PassBuilder &PB) {
       PB.registerPipelineParsingCallback(
-        [](StringRef Name, FunctionPassManager &FPM,
+        [](StringRef Name, ModulePassManager &FPM,
         ArrayRef<PassBuilder::PipelineElement>) {
           if(Name == "clambc-remove-pointer-phis"){
             FPM.addPass(ClamBCRemovePointerPHIs::ClamBCRemovePointerPHIs());
