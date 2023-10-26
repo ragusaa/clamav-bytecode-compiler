@@ -65,39 +65,25 @@ namespace {
 
             virtual void loadTypesFromAllocas(llvm::Function * pFunc) {
 
+                if (pFunc->isDeclaration()){
+                    return;
+                }
+
                 /*There should only ever be allocas in the first basic block, so only look there.*/
                 BasicBlock * pBB = llvm::dyn_cast<BasicBlock>(pFunc->begin());
                 if (nullptr == pBB){
                     ClamBCStop("How is this possible?\n", pFunc);
                 }
 
-                DEBUG_VALUE(pBB);
-
                 /*Allocas are grouped at the top of the block, 
                  * so we are done when we hit our first non-alloca*/
                 for (auto i = pBB->begin(), e = pBB->end(); i != e; i++){
-                    Instruction * pInst = llvm::cast<Instruction>(i);
-                    DEBUGERR << pInst << "<END>\n";
-                    DEBUGERR << (nullptr == pInst) << "<END>\n";
-                    DEBUGERR << (i == pBB->end()) << "<END>\n";
-                    DEBUGERR << (llvm::isa<AllocaInst>(pInst ))<< "<END>\n";
-                    DEBUG_VALUE(pInst);
-
-
-
-
-
-#if 0
                     AllocaInst * pai = llvm::dyn_cast<AllocaInst>(i);
-#else
-                    AllocaInst * pai = llvm::dyn_cast<AllocaInst>(pInst);
-#endif
                     if (nullptr == pai){
                         break;
                     }
                     insertType(pai->getType());
                 }
-
             }
 
             virtual void loadTypesFromVariables(llvm::Module * pMod){
