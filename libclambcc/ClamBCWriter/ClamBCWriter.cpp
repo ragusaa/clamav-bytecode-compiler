@@ -119,7 +119,8 @@ class ClamBCOutputWriter
   public:
     static ClamBCOutputWriter *createClamBCOutputWriter(llvm::StringRef srFileName,
                                                         llvm::Module *pMod,
-                                                        ClamBCAnalysis *pAnalyzer)
+                                                        ClamBCAnalysis *pAnalyzer, 
+                                                        ClamBCTypeAnalysis * pClamBCTypeAnalysis)
     {
         std::error_code ec;
         raw_fd_ostream *rfo        = new raw_fd_ostream(srFileName, ec);
@@ -129,7 +130,7 @@ class ClamBCOutputWriter
             assert(0 && "FIGURE OUT THE CORRECT WAY TO DIE");
             //ClamBCStop();
         }
-        ClamBCOutputWriter *ret = new ClamBCOutputWriter(*fro, pMod, pAnalyzer);
+        ClamBCOutputWriter *ret = new ClamBCOutputWriter(*fro, pMod, pAnalyzer, pClamBCTypeAnalysis);
         if (nullptr == ret) {
             assert(0 && "FIGURE OUT THE CORRECT WAY TO DIE");
             //ClamBCStop();
@@ -137,8 +138,8 @@ class ClamBCOutputWriter
         return ret;
     }
 
-    ClamBCOutputWriter(llvm::formatted_raw_ostream &outStream, llvm::Module *pMod, ClamBCAnalysis *pAnalyzer)
-        : Out(lineBuffer), OutReal(outStream), maxLineLength(0), lastLinePos(0), pMod(pMod), pAnalyzer(pAnalyzer)
+    ClamBCOutputWriter(llvm::formatted_raw_ostream &outStream, llvm::Module *pMod, ClamBCAnalysis *pAnalyzer, ClamBCTypeAnalysis * pClamBCTypeAnalysis)
+        : Out(lineBuffer), OutReal(outStream), maxLineLength(0), lastLinePos(0), pMod(pMod), pAnalyzer(pAnalyzer), pClamBCTypeAnalysis(pClamBCTypeAnalysis)
     {
         printGlobals(pMod, pAnalyzer);
     }
@@ -331,15 +332,11 @@ class ClamBCOutputWriter
 #if 0
             const Type *ETy = PTy->getElementType();
 #else
-
             DEBUG_WHERE;
-
-
-            DEBUGERR << "need analysis pass to store all types in the module;" << "<END>\n";
-
-
-            const Type * ETy = clamBCTypeAnalysis->getPointerElementType(pMod, PTy);
+            DEBUG_NONPOINTER(pClamBCTypeAnalysis);
+            const Type * ETy = pClamBCTypeAnalysis->getPointerElementType(pMod, PTy);
 #endif
+            DEBUG_WHERE;
             // pointers to opaque types are treated as i8*
             int id = -1;
             if (llvm::isa<StructType>(ETy)) {
@@ -352,8 +349,10 @@ class ClamBCOutputWriter
                 id = pAnalyzer->getTypeID(ETy);
             }
             printNumber(Out, id, false);
+            DEBUG_WHERE;
             return;
         }
+            DEBUG_WHERE;
 
         ClamBCStop("Unsupported type ", M);
     }
@@ -649,7 +648,7 @@ DEBUG_VALUE(*I);
     int lastLinePos           = 0;
     llvm::Module *pMod        = nullptr;
     ClamBCAnalysis *pAnalyzer = nullptr;
-    ClamBCTypeAnalysis * clamBCTypeAnalysis = nullptr;
+    ClamBCTypeAnalysis * pClamBCTypeAnalysis = nullptr;
 
     void printFixedNumber(raw_ostream &Out, unsigned n, unsigned fixed)
     {
@@ -801,7 +800,7 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 #endif
         clamBCTypeAnalysis = &mam.getResult<ClamBCTypeAnalyzer>(m);
 
-        pOutputWriter = ClamBCOutputWriter::createClamBCOutputWriter(outFile, pMod, pAnalyzer);
+        pOutputWriter = ClamBCOutputWriter::createClamBCOutputWriter(outFile, pMod, pAnalyzer, clamBCTypeAnalysis);
 
         for (auto i = pMod->begin(), e = pMod->end(); i != e; i++) {
             if (llvm::isa<Function>(i)) {

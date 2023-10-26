@@ -104,6 +104,10 @@ namespace {
             virtual Type * testType(Type * test, const PointerType  * const pType){
                 Type * t = test;
                 Type * last = t;
+
+                if (test == pType){
+                    return test;
+                }
                 for (size_t j = 0; j < 3; j++){
                     t = PointerType::get(test, pType->getAddressSpace());
                     if (t == pType){
@@ -136,7 +140,13 @@ namespace {
                     }
                 }
 
+                DEBUGERR << "Dumping all types\n";
+                for (auto type : types){
+                    DEBUG_VALUE(type);
+                }
+                DEBUGERR  << "DONE\n";
                 DEBUG_VALUE(pType);
+
                 assert (0 && "NEED TO LOOK AT MORE TYPES");
 
                 return nullptr;
