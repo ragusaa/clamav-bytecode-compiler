@@ -799,12 +799,8 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
         ClamBCAnalysis & analysis     = mam.getResult<ClamBCAnalyzer>(m);
         pAnalyzer = &analysis;
 #endif
-
-#if 0
         clamBCTypeAnalysis = &mam.getResult<ClamBCTypeAnalyzer>(m);
-#else
-        assert (0 && "re-add type analysis");
-#endif
+
 
         pOutputWriter = ClamBCOutputWriter::createClamBCOutputWriter(outFile, pMod, pAnalyzer);
 
