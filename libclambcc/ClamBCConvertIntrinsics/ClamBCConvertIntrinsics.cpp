@@ -119,31 +119,26 @@ class ClamBCConvertIntrinsics : public PassInfoMixin<ClamBCConvertIntrinsics >
             args.push_back(pv);
         }
 
-#if 0
-        Constant* f = getNewMemset();
-        CallInst::Create(getMemsetType(), f, args, "", pci);
-#else
-        FunctionCallee * f = getNewMemset();
-        CallInst::Create(*f, args, "", pci);
-#endif
+        FunctionCallee f = pMod->getOrInsertFunction("llvm.memset.p0i8.i32", getMemsetType());
+        CallInst::Create(f, args, "", pci);
         delLst.push_back(pci);
     }
 
-    llvm::FunctionCallee* getNewMemset()
-    {
-        static llvm::FunctionCallee* ret = nullptr;
+//    llvm::FunctionCallee* getNewMemset()
+//    {
+//        static llvm::FunctionCallee* ret = nullptr;
+//
+//        if (nullptr == ret) {
+//
+//            FunctionType* retType = getMemsetType();
+//            static llvm::FunctionCallee fc = pMod->getOrInsertFunction("llvm.memset.p0i8.i32", retType);
+//            ret                   = &fc;
+//
+//            assert(ret && "Could not get memset");
+//        }
 
-        if (nullptr == ret) {
-
-            FunctionType* retType = getMemsetType();
-            static llvm::FunctionCallee fc = pMod->getOrInsertFunction("llvm.memset.p0i8.i32", retType);
-            ret                   = &fc;
-
-            assert(ret && "Could not get memset");
-        }
-
-        return ret;
-    }
+//        return ret;
+//    }
 
     llvm::FunctionType* getMemsetType()
     {
