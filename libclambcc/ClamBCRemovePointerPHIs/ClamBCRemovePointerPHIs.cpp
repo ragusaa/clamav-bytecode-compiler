@@ -234,13 +234,51 @@ ClamBCTypeAnalysis * clamBCTypeAnalysis = nullptr;
 
         PointerType * pPointerType = llvm::dyn_cast<PointerType>(pBasePtr->getType());
         assert (pPointerType && "How is this possible");
-#if 0
-        Type * pGEPType = getPointerElementType(pn->getParent()->getParent()->getParent(), pPointerType);
+#if 1
+        Type * pGEPType = pPointerType->getPointerElementType();
 #else
-        Type * pGEPType = clamBCTypeAnalysis->getPointerElementType(pn->getParent()->getParent()->getParent(), pPointerType);
+#if 1
+        Type * pGEPType = clamBCTypeAnalysis->getPointerElementType(pMod, pPointerType);
+#else
+        Type * pGEPType = clamBCTypeAnalysis->getPointerElementType(pMod, llvm::cast<PointerType>(pn->getType()));
 #endif
+        {
+        DEBUG_VALUE(pGEPType);
+        DEBUG_VALUE(pPointerType);
+        DEBUG_VALUE(pPointerType->getPointerElementType());
+        DEBUG_VALUE(pn);
+Type * type = nullptr;
+        for (size_t i = 0; i < pn->getNumIncomingValues(); i++){
+            Value * incoming = pn->getIncomingValue(i);
+            if (nullptr == type){
+                type = incoming->getType();
+                continue;
+            }
+            if (incoming->getType() != type) {
+                DEBUG_VALUE(type);
+                DEBUG_VALUE(incoming);
+                assert (0 && "wtf");
+            }
+            DEBUG_VALUE(pn->getIncomingValue(i));
+            DEBUG_VALUE(pn->getIncomingValue(i)->getType());
+        }
+        pGEPType = type;
+    }
+        //DEBUGERR << "WORKS IF I USE THE DEPRECATED FUNCTION" << "<END>\n";
+
+
+
+#endif
+        DEBUG_VALUE(pBasePtr);
+        DEBUG_VALUE(pGEPType);
+        //pGEPType = pPointerType->getPointerElementType();
 
         Instruction *gepiNew = GetElementPtrInst::Create(pGEPType, pBasePtr, idxNode, "ClamBCRemovePointerPHIs_gepi_", insPt);
+
+        //DEBUG_VALUE(gepiNew);
+        //DEBUG_VALUE(gepiNew->getType());
+        //DEBUG_VALUE(gepiNew->getParent()->getParent());
+        //assert (0 && "fjkldlsjfkldjskldksjdklsj");
         if (pn->getType() != gepiNew->getType()) {
             gepiNew = CastInst::CreatePointerCast(gepiNew, pn->getType(), "ClamBCRemovePointerPHIs_cast_", insPt);
         }

@@ -101,15 +101,16 @@ namespace {
                 }
             }
 
-            virtual Type * testType(Type * test, const PointerType  * const pType){
+            virtual Type * testType(Type * test, const Type  * const pType){
                 Type * t = test;
                 Type * last = t;
 
-                if (test == pType){
-                    return test;
-                }
+//                if (test == pType){
+//                    return test;
+//                }
                 for (size_t j = 0; j < 3; j++){
-                    t = PointerType::get(test, pType->getAddressSpace());
+                    //t = PointerType::get(test, pType->getAddressSpace());
+                    t = PointerType::get(test, 0);
                     if (t == pType){
                         return last;
                     }
@@ -132,7 +133,7 @@ namespace {
             }
 
             virtual llvm::Type * getPointerElementType(
-                    const llvm::Module * const pMod, const PointerType * const pType) {
+                    const llvm::Module * const pMod, const Type * const pType) {
                 for (auto type : types){
                     Type * ret = testType(type, pType);
                     if (nullptr != ret){
