@@ -43,25 +43,45 @@ OPTIONS_STR+=" --vectorize-loops=false"
 PASS_STR = "function(mem2reg)"
 PASS_STR+=','
 PASS_STR+='clambc-remove-undefs'
+PASS_STR+=',verify'
 PASS_STR+=','
 PASS_STR+='clambc-preserve-abis'
+PASS_STR+=',verify'
 PASS_STR+=',default<O3>'
 #PASS_STR+=',default<O0>'
 PASS_STR+=',clambc-preserve-abis' #remove fake function calls because O3 has already run
-PASS_STR+=',function(clambc-remove-pointer-phis)'
+PASS_STR+=',verify'
+PASS_STR+=',clambc-remove-pointer-phis'
+#PASS_STR+=',function(clambc-remove-pointer-phis)'
+PASS_STR+=',verify'
 PASS_STR+=',clambc-lowering-notfinal' # perform lowering pass
+PASS_STR+=',verify'
 PASS_STR+=',lowerswitch'
+PASS_STR+=',verify'
 PASS_STR+=',function(clambc-verifier)'
+PASS_STR+=',verify'
 PASS_STR+=',clambc-remove-freeze-insts'
+PASS_STR+=',verify'
 PASS_STR+=',clambc-lowering-notfinal'  # perform lowering pass
+PASS_STR+=',verify'
 PASS_STR+=',clambc-lcompiler-helper' #compile the logical_trigger function to a
+PASS_STR+=',verify'
 PASS_STR+=',clambc-lcompiler' #compile the logical_trigger function to a
+PASS_STR+=',verify'
 PASS_STR+=',clambc-rebuild'
+PASS_STR+=',verify'
 PASS_STR+=',clambc-trace'
+PASS_STR+=',verify'
 PASS_STR+=',clambc-outline-endianness-calls'
+PASS_STR+=',verify'
 PASS_STR+=',clambc-change-malloc-arg-size'
+PASS_STR+=',verify'
 PASS_STR+=',clambc-extend-phis-to-64-bit'
-PASS_STR+=',clambc-writer'
+PASS_STR+=',verify'
+PASS_STR+=',clambc-convert-intrinsics'
+PASS_STR+=',verify'
+PASS_STR+=',globalopt'
+#PASS_STR+=',clambc-writer'
 
 
 
@@ -71,6 +91,7 @@ LOAD_STR = "--load %s/install/lib/libclambccommon.so " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcremoveundefs.so  " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcpreserveabis.so  " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcanalyzer.so  " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambctypeanalyzer.so " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcremovepointerphis.so  " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcloweringf.so  " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcloweringnf.so  " % INSTALL_DIR
@@ -83,6 +104,8 @@ LOAD_STR += " --load-pass-plugin %s/install/lib/libclambctrace.so " % INSTALL_DI
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcoutlineendiannesscalls.so " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcchangemallocargsize.so " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcextendphisto64bit.so " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcregalloc.so " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcconvertintrinsics.so " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcwriter.so " % INSTALL_DIR
 
 
@@ -104,8 +127,10 @@ LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcwriter.so " % INSTALL_D
 OPT_CMD = 'opt-16 -S %s --passes=\"%s\" %s ' % (LOAD_STR, PASS_STR, OPTIONS_STR)
 
 
-OPT_CMD += " -opaque-pointers=0 "
-COMPILE_CMD += " -Xclang -no-opaque-pointers "
+#print ("Re-evaluate here")
+#print ("Disabling opaque pointers here")
+#OPT_CMD += " -opaque-pointers=0 "
+#COMPILE_CMD += " -Xclang -no-opaque-pointers "
 
 """
 #This is to find undefs.
