@@ -234,10 +234,10 @@ ClamBCTypeAnalysis * clamBCTypeAnalysis = nullptr;
 
         PointerType * pPointerType = llvm::dyn_cast<PointerType>(pBasePtr->getType());
         assert (pPointerType && "How is this possible");
-#if 1
+#if 0
         Type * pGEPType = pPointerType->getPointerElementType();
 #else
-#if 1
+#if 0
         Type * pGEPType = clamBCTypeAnalysis->getPointerElementType(pMod, pPointerType);
 #else
         Type * pGEPType = clamBCTypeAnalysis->getPointerElementType(pMod, llvm::cast<PointerType>(pn->getType()));
@@ -245,7 +245,7 @@ ClamBCTypeAnalysis * clamBCTypeAnalysis = nullptr;
         {
         DEBUG_VALUE(pGEPType);
         DEBUG_VALUE(pPointerType);
-        DEBUG_VALUE(pPointerType->getPointerElementType());
+//        DEBUG_VALUE(pPointerType->getPointerElementType());
         DEBUG_VALUE(pn);
 Type * type = nullptr;
         for (size_t i = 0; i < pn->getNumIncomingValues(); i++){

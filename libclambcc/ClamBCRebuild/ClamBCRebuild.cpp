@@ -422,12 +422,36 @@ NOTE: I am not ready to delete this block yet, I want to revisit this when I am 
         Value * gepiNew = pNew;
         llvm::ArrayRef<llvm::Value *> Idxs = {Zero, vCnt};
 
+#if 0
         gepiNew = GetElementPtrInst::Create(pgepi->getResultElementType(), gepiNew, vCnt, "processGEPI_3_", pgepi);
+#else
+        DEBUG_VALUE(gepiNew);
+        DEBUG_VALUE(gepiNew->getType());
+        DEBUG_VALUE(pgepi);
+        DEBUG_VALUE(pgepi->getResultElementType());
+
+
+        Type * pt = Type::getInt8PtrTy(pMod->getContext());
+
+        gepiNew = CastInst::CreatePointerCast(gepiNew, pt, "fuckyou", pgepi);
+
+
+
+
+        DEBUG_VALUE(gepiNew);
+        DEBUG_VALUE(pt);
+        //gepiNew = GetElementPtrInst::Create(pgepi->getResultElementType(), gepiNew, vCnt, "processGEPI_3_", pgepi);
+        gepiNew = GetElementPtrInst::Create(pt, gepiNew, vCnt, "processGEPI_3_", pgepi);
+        DEBUG_WHERE;
+#endif
 
         CastInst *ciNew = CastInst::CreatePointerCast(gepiNew, pgepi->getType(), "processGEPI_cast_", pgepi);
+        DEBUG_WHERE;
 
         pgepi->replaceAllUsesWith(ciNew);
+        DEBUG_WHERE;
         pgepi->eraseFromParent();
+        DEBUG_WHERE;
     }
 #endif
 
