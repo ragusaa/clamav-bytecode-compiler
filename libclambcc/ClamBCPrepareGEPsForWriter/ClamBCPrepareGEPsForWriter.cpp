@@ -45,10 +45,13 @@
 #include <llvm/Pass.h>
 
 #include <llvm/Analysis/ValueTracking.h>
+#include <llvm/Passes/PassBuilder.h>
+#include <llvm/Passes/PassPlugin.h>
 
 using namespace llvm;
 
-class ClamBCPrepareGEPsForWriter : public ModulePass
+//class ClamBCPrepareGEPsForWriter : public ModulePass
+class ClamBCPrepareGEPsForWriter : public PassInfoMixin<ClamBCPrepareGEPsForWriter >
 {
   protected:
     llvm::Module *pMod = nullptr;
@@ -56,8 +59,7 @@ class ClamBCPrepareGEPsForWriter : public ModulePass
   public:
     static char ID;
 
-    explicit ClamBCPrepareGEPsForWriter()
-        : ModulePass(ID) {}
+    explicit ClamBCPrepareGEPsForWriter() {}
 
     virtual ~ClamBCPrepareGEPsForWriter() {}
 
@@ -372,7 +374,8 @@ class ClamBCPrepareGEPsForWriter : public ModulePass
         }
     }
 
-    virtual bool runOnModule(Module &m)
+    //virtual bool runOnModule(Module &m)
+    PreservedAnalyses run(Module & m, ModuleAnalysisManager & mam)
     {
         pMod = &m;
         for (auto i = pMod->begin(), e = pMod->end(); i != e; i++) {
@@ -387,7 +390,9 @@ class ClamBCPrepareGEPsForWriter : public ModulePass
             fixCasts(pFunc);
         }
 
-        return true;
+     //   return true;
+     DEBUGERR << "determine if this actually changes the analyssi" <<"<end>\n";
+        return PreservedAnalyses::none();
     }
 
     virtual void fixCasts(Function *pFunc)
@@ -417,6 +422,7 @@ class ClamBCPrepareGEPsForWriter : public ModulePass
     }
 };
 
+#if 0
 char ClamBCPrepareGEPsForWriter::ID = 0;
 static RegisterPass<ClamBCPrepareGEPsForWriter> X("clambc-prepare-geps-for-writer", "ClamBCPrepareGEPsForWriter Pass",
                                                   false /* Only looks at CFG */,
@@ -426,3 +432,34 @@ llvm::ModulePass *createClamBCPrepareGEPsForWriter()
 {
     return new ClamBCPrepareGEPsForWriter();
 }
+#else
+
+
+// This part is the new way of registering your pass
+extern "C" ::llvm::PassPluginLibraryInfo LLVM_ATTRIBUTE_WEAK
+llvmGetPassPluginInfo() {
+    return {
+        LLVM_PLUGIN_API_VERSION, "ClamBCPrepareGEPsForWriter", "v0.1",
+            [](PassBuilder &PB) {
+                PB.registerPipelineParsingCallback(
+                        [](StringRef Name, ModulePassManager &FPM,
+                            ArrayRef<PassBuilder::PipelineElement>) {
+                        if(Name == "clambc-prepare-geps-for-writer"){
+                        FPM.addPass(ClamBCPrepareGEPsForWriter());
+                        return true;
+                        }
+                        return false;
+                        }
+                        );
+            }
+    };
+}
+
+
+
+
+
+#endif
+
+
+
