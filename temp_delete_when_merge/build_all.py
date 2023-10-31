@@ -39,6 +39,9 @@ OPTIONS_STR+=" --vectorize-loops=false"
 
 
 
+internalizeAPIList = "_Z10entrypointv,entrypoint,__clambc_kind,__clambc_virusname_prefix,__clambc_virusnames,__clambc_filesize,__clambc_match_counts,__clambc_match_offsets,__clambc_pedata,__Copyright"
+
+OPTIONS_STR+=f' -internalize-public-api-list="{internalizeAPIList}"'
 
 PASS_STR = "function(mem2reg)"
 PASS_STR+=','
@@ -49,6 +52,7 @@ PASS_STR+='clambc-preserve-abis'
 PASS_STR+=',verify'
 PASS_STR+=',default<O3>'
 #PASS_STR+=',default<O0>'
+PASS_STR+=',globalopt'
 PASS_STR+=',clambc-preserve-abis' #remove fake function calls because O3 has already run
 PASS_STR+=',verify'
 PASS_STR+=',clambc-remove-pointer-phis'
@@ -70,6 +74,8 @@ PASS_STR+=',clambc-lcompiler-helper' #compile the logical_trigger function to a
 PASS_STR+=',verify'
 PASS_STR+=',clambc-lcompiler' #compile the logical_trigger function to a
 PASS_STR+=',verify'
+PASS_STR+=',internalize'
+PASS_STR+=',verify'
 PASS_STR+=',clambc-rebuild'
 PASS_STR+=',verify'
 PASS_STR+=',clambc-trace'
@@ -84,6 +90,7 @@ PASS_STR+=',clambc-convert-intrinsics'
 PASS_STR+=',verify'
 PASS_STR+=',globalopt'
 PASS_STR+=',clambc-writer'
+PASS_STR+=',verify'
 
 
 
