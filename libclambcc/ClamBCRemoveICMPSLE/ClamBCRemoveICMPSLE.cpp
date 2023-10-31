@@ -65,7 +65,7 @@ namespace
                 gatherInstructions(pFunc, insts);
 
                 for (size_t i = 0; i < insts.size(); i++){
-                    DEBUG_VALUE(insts[i]);
+                    insts[i]->swapOperands();
                 }
 
             }
