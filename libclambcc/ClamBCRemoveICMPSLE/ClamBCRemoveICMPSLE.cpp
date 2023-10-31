@@ -20,7 +20,7 @@
  *  MA 02110-1301, USA.
  */
 
-//#include "Common/clambc.h"
+#include "Common/clambc.h"
 //#include "Common/ClamBCUtilities.h"
 
 #include <llvm/IR/Module.h>
@@ -46,6 +46,29 @@ namespace
             Module *pMod = nullptr;
             bool bChanged = false;
 
+            virtual void gatherInstructions(Function * pFunc, std::vector<ICmpInst*> & insts){
+                for (auto i = pFunc->begin(), e = pFunc->end(); i != e; i++){
+                    BasicBlock * pBB = llvm::cast<BasicBlock>(i);
+                    for (auto bbi = pBB->begin(), bbe = pBB->end(); bbi != bbe; bbi++){
+                        ICmpInst * inst = llvm::dyn_cast<ICmpInst>(bbi);
+                        if (inst){
+                            if ( CmpInst::ICMP_SLE == inst->getPredicate()){
+                                insts.push_back(inst);
+                            }
+                        }
+                    }
+                }
+            }
+
+            virtual void processFunction(Function * pFunc){
+                std::vector<ICmpInst*> insts;
+                gatherInstructions(pFunc, insts);
+
+                for (size_t i = 0; i < insts.size(); i++){
+                    DEBUG_VALUE(insts[i]);
+                }
+
+            }
         public:
 
             virtual ~ClamBCRemoveICMPSLE() {}
@@ -53,10 +76,18 @@ namespace
             PreservedAnalyses run(Module & m, ModuleAnalysisManager & MAM)
             {
                 pMod = &m;
-                llvm::errs() << "<" << __FUNCTION__ << "::" << __LINE__ << ">" << "Transform Pass" << "<END>\n";
+                for (auto i = pMod->begin(), e = pMod->end(); i != e; i++){
+                    Function * pFunc = llvm::dyn_cast<Function>(i);
+                    if (pFunc){
+                        if (pFunc->isDeclaration()){
+                            continue;
+                        }
+
+                        processFunction(pFunc);
+                    }
+                }
 
 
-                llvm::errs() << "<" << __FUNCTION__ << "::" << __LINE__ << ">" << "Transform Pass (leaving)" << "<END>\n";
 
                 if (bChanged){
                     return PreservedAnalyses::none();

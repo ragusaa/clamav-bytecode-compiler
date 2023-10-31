@@ -19,7 +19,7 @@ COMPILE_CMD = """clang-16    \
 	-o    \
 	%s    \
 	-I    \
-	/home/aragusa/clamav-bytecode-compiler-upstream/build/install/bin/../include    \
+	/home/aragusa/clamav-bytecode-compiler-aragusa/headers \
 	-include    \
 	bytecode.h    \
 	-D__CLAMBC__"""
@@ -57,6 +57,8 @@ PASS_STR+=',verify'
 PASS_STR+=',clambc-lowering-notfinal' # perform lowering pass
 PASS_STR+=',verify'
 PASS_STR+=',lowerswitch'
+PASS_STR+=',verify'
+PASS_STR+=',clambc-remove-icmp-sle'
 PASS_STR+=',verify'
 PASS_STR+=',function(clambc-verifier)'
 PASS_STR+=',verify'
@@ -106,6 +108,7 @@ LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcchangemallocargsize.so 
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcextendphisto64bit.so " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcregalloc.so " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcconvertintrinsics.so " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcremoveicmpsle.so " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcwriter.so " % INSTALL_DIR
 
 
