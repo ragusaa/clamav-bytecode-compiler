@@ -824,6 +824,7 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
                 if (1 == pGEP->getNumIndices()) {
                     int iid = pAnalyzer->getTypeID(pGEP->getPointerOperand()->getType());
                     if (iid > 65) {
+                        DEBUG_VALUE(pGEP);
                         geps.push_back(pGEP);
                     }
                 }
@@ -863,7 +864,8 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 #if 0
             pType       = pType->getPointerElementType();
 #else
-            DEBUGERR << *pGep << "<END>\n";
+            DEBUG_VALUE(pGep);
+            DEBUG_VALUE(pGep->getType());
             assert (0 && "Figure out what to do here");
 #endif
 
@@ -1338,7 +1340,9 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
                 opc = OP_BC_ICMP_SGE;
                 break;
             case CmpInst::ICMP_SLE:
+                /*This is caused by the combination of 'O3 and lowerswitch'*/
                 opc = OP_BC_ICMP_SLE;
+                DEBUG_NONPOINTER(minflvl);
                 if (minflvl < FUNC_LEVEL_098_5)
                     stop("Instruction opcode 29 (signed less than or equal to) is "
                          "not supported clamav JIT on functionality levels prior to "
