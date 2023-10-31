@@ -19,12 +19,11 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  *  MA 02110-1301, USA.
  */
-#include "../Common/bytecode_api.h"
-#include "clambc.h"
+#include "Common/bytecode_api.h"
+#include "Common/clambc.h"
 #include "Common/ClamBCUtilities.h"
 
 #include <llvm/Support/DataTypes.h>
-//#include "ClamBCTargetMachine.h"
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/Analysis/ConstantFolding.h>
 #include <llvm/IR/DebugInfo.h>
@@ -35,7 +34,6 @@
 #include <llvm/IR/Attributes.h>
 #include <llvm/IR/CallingConv.h>
 #include <llvm/CodeGen/IntrinsicLowering.h>
-//#include "llvm/Config/config.h"
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Instructions.h>
@@ -154,7 +152,8 @@ class ClamBCPrepareGEPsForWriter : public ModulePass
         return 0;
     }
 
-use the functions from Common/ClamBCUtilities.cpp;
+#if 0
+//use the functions from Common/ClamBCUtilities.cpp;
     virtual Type *findTypeAtIndex(Type *pst, ConstantInt *ciIdx)
     {
         Type *ret = nullptr;
@@ -170,6 +169,7 @@ use the functions from Common/ClamBCUtilities.cpp;
         }
         return ret;
     }
+#endif
 
     virtual void processGEPI(GetElementPtrInst *pgepi, BitCastInst *pbci, Value *underlyingObject, StructType *gepiDstType)
     {

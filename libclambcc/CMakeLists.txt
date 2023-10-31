@@ -25,3 +25,5 @@ add_subdirectory(ClamBCConvertIntrinsics)
 
 
 
+
+add_subdirectory(ClamBCPrepareGEPsForWriter)
