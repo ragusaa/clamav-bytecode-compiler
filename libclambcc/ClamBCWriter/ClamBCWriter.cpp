@@ -899,9 +899,11 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 
     bool runOnFunction(Function &F)
     {
+        DEBUG_WHERE;
         //TODO: Move this to another pass once the Analyzer no longer
         //makes changes to the code.
         fixGEPs(&F);
+        DEBUG_WHERE;
 
         //Don't think I need this anymore.
         //If anything, move it to a verifier.
@@ -950,13 +952,21 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 
     virtual bool doFinalization(Module &M)
     {
+        DEBUG_WHERE;
         printEOL();
+        DEBUG_WHERE;
         pOutputWriter->finished(pMod, pAnalyzer);
+        DEBUG_WHERE;
         if (MapOut) {
+        DEBUG_WHERE;
             pOutputWriter->dumpTypes(*MapOut);
+        DEBUG_WHERE;
             MapOut->flush();
+        DEBUG_WHERE;
         }
+        DEBUG_WHERE;
         if (Dumper) {
+        DEBUG_WHERE;
             delete Dumper;
         }
 
@@ -1056,8 +1066,8 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
                         printOperand(GEP, GEP.getOperand(2));
                         if (ConstantInt *CI = dyn_cast<ConstantInt>(GEP.getOperand(1))) {
                             if (!CI->isZero()) {
-                                const PointerType *Ty = cast<PointerType>(GEP.getPointerOperand()->getType());
 #if 0
+                                const PointerType *Ty = cast<PointerType>(GEP.getPointerOperand()->getType());
                                 const ArrayType *ATy  = dyn_cast<ArrayType>(Ty->getElementType());
 #else
                                 const ArrayType *ATy  = nullptr;
