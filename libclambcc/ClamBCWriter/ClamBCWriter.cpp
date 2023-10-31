@@ -1059,7 +1059,7 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
                                 const ArrayType *ATy  = dyn_cast<ArrayType>(Ty->getElementType());
 #else
                                 const ArrayType *ATy  = nullptr;
-                                assert (0 && "Figure out what to do here");
+                                assert (0 && "Figure out what to do here 2");
 #endif
                                 if (ATy) {
                                     ClamBCStop("ATy", &GEP);
