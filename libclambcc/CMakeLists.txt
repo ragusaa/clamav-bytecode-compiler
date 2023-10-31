@@ -27,3 +27,4 @@ add_subdirectory(ClamBCConvertIntrinsics)
 
 
 add_subdirectory(ClamBCPrepareGEPsForWriter)
+add_subdirectory(ClamBCRemoveICMPSLE)
