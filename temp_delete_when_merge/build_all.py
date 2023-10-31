@@ -81,7 +81,7 @@ PASS_STR+=',verify'
 PASS_STR+=',clambc-convert-intrinsics'
 PASS_STR+=',verify'
 PASS_STR+=',globalopt'
-#PASS_STR+=',clambc-writer'
+PASS_STR+=',clambc-writer'
 
 
 
