@@ -221,7 +221,11 @@ ClamBCTypeAnalysis * clamBCTypeAnalysis = nullptr;
             }
 
             if (pBasePtr == incoming) {
+                DEBUG_VALUE(initValue);
+                    DEBUG_WHERE;
                 idxNode->addIncoming(initValue, pn->getIncomingBlock(i));
+                    DEBUG_WHERE;
+                DEBUG_VALUE(initValue);
                 omitNodes.push_back(pn->getIncomingBlock(i));
                 break;
             }
@@ -271,7 +275,7 @@ Type * type = nullptr;
 #endif
         DEBUG_VALUE(pBasePtr);
         DEBUG_VALUE(pGEPType);
-        //pGEPType = pPointerType->getPointerElementType();
+        pGEPType = pPointerType->getPointerElementType();
 
         Instruction *gepiNew = GetElementPtrInst::Create(pGEPType, pBasePtr, idxNode, "ClamBCRemovePointerPHIs_gepi_", insPt);
 
@@ -297,7 +301,9 @@ Type * type = nullptr;
                     Instruction *add = BinaryOperator::Create(Instruction::Add, idxNode, incVal, "ClamBCRemovePointerPHIs_add_", pgepi);
                     BasicBlock *pred = findPredecessor(idxNode->getParent(), pgepi->getParent(), omitNodes);
                     assert(pred && "Could not find predecessor");
+                    DEBUG_WHERE;
                     idxNode->addIncoming(add, pred);
+                    DEBUG_WHERE;
 
                     Instruction *gepiNew2 = gepiNew;
                     if (pgepi->getType() != gepiNew2->getType()) {

@@ -77,20 +77,20 @@ PASS_STR+=',verify'
 PASS_STR+=',internalize'
 PASS_STR+=',verify'
 PASS_STR+=',clambc-rebuild'
-PASS_STR+=',verify'
-PASS_STR+=',clambc-trace'
-PASS_STR+=',verify'
-PASS_STR+=',clambc-outline-endianness-calls'
-PASS_STR+=',verify'
-PASS_STR+=',clambc-change-malloc-arg-size'
-PASS_STR+=',verify'
-PASS_STR+=',clambc-extend-phis-to-64-bit'
-PASS_STR+=',verify'
-PASS_STR+=',clambc-convert-intrinsics'
-PASS_STR+=',verify'
-PASS_STR+=',globalopt'
-PASS_STR+=',clambc-writer'
-PASS_STR+=',verify'
+#PASS_STR+=',verify'
+#PASS_STR+=',clambc-trace'
+#PASS_STR+=',verify'
+#PASS_STR+=',clambc-outline-endianness-calls'
+#PASS_STR+=',verify'
+#PASS_STR+=',clambc-change-malloc-arg-size'
+#PASS_STR+=',verify'
+#PASS_STR+=',clambc-extend-phis-to-64-bit'
+#PASS_STR+=',verify'
+#PASS_STR+=',clambc-convert-intrinsics'
+#PASS_STR+=',verify'
+#PASS_STR+=',globalopt'
+#PASS_STR+=',clambc-writer'
+#PASS_STR+=',verify'
 
 
 
@@ -139,8 +139,8 @@ OPT_CMD = 'opt-16 -S %s --passes=\"%s\" %s ' % (LOAD_STR, PASS_STR, OPTIONS_STR)
 
 #print ("Re-evaluate here")
 #print ("Disabling opaque pointers here")
-#OPT_CMD += " -opaque-pointers=0 "
-#COMPILE_CMD += " -Xclang -no-opaque-pointers "
+OPT_CMD += " -opaque-pointers=0 "
+COMPILE_CMD += " -Xclang -no-opaque-pointers "
 
 """
 #This is to find undefs.
