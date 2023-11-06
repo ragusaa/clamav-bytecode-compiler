@@ -107,7 +107,6 @@ class ClamBCRebuild : public PassInfoMixin<ClamBCRebuild>, public InstVisitor<Cl
                 assert(PN);
 
                 for (unsigned i = 0; i < N->getNumIncomingValues(); i++) {
-                    DEBUG_NONPOINTER(i);
                     Value *V       = mapPHIValue(N->getIncomingValue(i));
                     BasicBlock *BB = mapBlock(N->getIncomingBlock(i));
 
@@ -117,12 +116,7 @@ class ClamBCRebuild : public PassInfoMixin<ClamBCRebuild>, public InstVisitor<Cl
                                     "ClamBCRebuild_fixCast_", BB->getTerminator());
                         }
                     }
-DEBUG_VALUE(V);
-DEBUG_VALUE(V->getType());
-DEBUG_VALUE(PN);
-DEBUG_VALUE(PN->getType());
                     PN->addIncoming(V, BB);
-DEBUG_WHERE;
                 }
                 assert(PN->getNumIncomingValues() > 0);
             }
@@ -316,7 +310,6 @@ DEBUG_WHERE;
 
     Value *mapValue(Value *V)
     {
-        DEBUG_VALUE(V);
         if (Constant *C = dyn_cast<Constant>(V)) {
             return mapConstant(C);
         }
@@ -336,7 +329,6 @@ DEBUG_WHERE;
         if (!NV) {
             errs() << "not remapped: " << *V << "\n";
         }
-        DEBUG_VALUE(NV);
         assert(NV);
         return NV;
     }
