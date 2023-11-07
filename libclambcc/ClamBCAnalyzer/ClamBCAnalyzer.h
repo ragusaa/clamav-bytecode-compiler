@@ -137,6 +137,16 @@ class ClamBCAnalysis
         TypeMapTy::iterator I = typeIDs.find(t);
         if (I == typeIDs.end()){
             DEBUG_VALUE(t);
+#if 1
+        static int first = 1;
+        if (first) {
+            for (auto i = typeIDs.begin(), e = typeIDs.end(); i != e; i++)
+            {
+                DEBUGERR << *(i->first) << "::" << i->second << "<END>\n";
+            }
+            first = 0;
+        }
+#endif
         }
         assert((I != typeIDs.end()) && "Type ID requested for unknown type");
         return I->second;

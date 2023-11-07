@@ -77,6 +77,8 @@ void ClamBCAnalysis::run(Module & m)
 {
     pMod = &m;
 
+    DEBUGERR << "ClamBCAnalysis::run::" << __LINE__ << "><END>\n";
+
     // Determine bytecode kind, default is 0 (generic).
     kind                   = 0;
     GlobalVariable *GVKind = pMod->getGlobalVariable("__clambc_kind");
@@ -316,6 +318,7 @@ DEBUG_NONPOINTER(ces.size());
             } else {
                 Ty = II->getType();
             }
+
             if (const GetElementPtrInst *GEPI = dyn_cast<GetElementPtrInst>(&*II)) {
                 const Type *GTy = GEPI->getPointerOperand()->getType();
                 if (!typeIDs.count(GTy)) {
@@ -324,12 +327,33 @@ DEBUG_NONPOINTER(ces.size());
                     typeIDs[GTy] = tid++;
                 }
             }
+
+            DEBUG_VALUE(II);
+            DEBUG_VALUE(Ty);
+            for (size_t i = 0;  i < II->getNumOperands(); i++){
+                Value * operand = II->getOperand(i);
+                if (llvm::isa<BasicBlock>(operand)){
+                    continue;
+                }
+                Type * pt = operand->getType();
+            DEBUG_VALUE(pt);
+                if (0 == typeIDs.count(pt)){
+            DEBUG_VALUE(pt);
+                    types.push_back(pt);
+                    extraTypes.push_back(pt);
+                    typeIDs[pt] = tid++;
+                }
+            }
+
+
             if (typeIDs.count(Ty)) {
                 continue;
             }
             types.push_back(Ty);
             extraTypes.push_back(Ty);
             typeIDs[Ty] = tid++;
+
+
         }
     }
 
@@ -367,6 +391,7 @@ DEBUG_NONPOINTER(ces.size());
 
     printGlobals(startTID);
 
+    DEBUGERR << "ClamBCAnalysis::run::" << __LINE__ << "><END>\n";
     //return false;
 }
 

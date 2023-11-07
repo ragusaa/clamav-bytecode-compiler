@@ -334,7 +334,8 @@ class ClamBCOutputWriter
 #else
             DEBUG_WHERE;
             DEBUG_NONPOINTER(pClamBCTypeAnalysis);
-            const Type * ETy = pClamBCTypeAnalysis->getPointerElementType(pMod, PTy);
+            //const Type * ETy = pClamBCTypeAnalysis->getPointerElementType(pMod, PTy);
+            const Type * ETy = PTy->getPointerElementType();
 #endif
             DEBUG_WHERE;
             // pointers to opaque types are treated as i8*
@@ -354,7 +355,9 @@ class ClamBCOutputWriter
         }
             DEBUG_WHERE;
 
-        ClamBCStop("Unsupported type ", M);
+            DEBUG_VALUE(  Ty  );
+            assert (0 && "fjkdlsfjkldsjflkjsdfj");
+        ClamBCStop("ClamBCWriter: Unsupported type ", M);
     }
 
     void printConstant(Module &M, Constant *C)
@@ -785,6 +788,7 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
     PreservedAnalyses run(Module & m, ModuleAnalysisManager & mam)
 #endif
     {
+    DEBUGERR << "ClamBCWriter::run::" << __LINE__ << "><END>\n";
         /*This used to be called as part of setup, so call it here (New Pass Manager)*/
         doInitialization(m);
 
@@ -795,8 +799,10 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 #if 0
         pAnalyzer     = &getAnalysis<ClamBCAnalyzer>();
 #else
+    DEBUGERR << "ClamBCWriter::run::" << __LINE__ << "><END>\n";
         ClamBCAnalysis & analysis     = mam.getResult<ClamBCAnalyzer>(m);
         pAnalyzer = &analysis;
+    DEBUGERR << "ClamBCWriter::run::" << __LINE__ << "><END>\n";
 #endif
         clamBCTypeAnalysis = &mam.getResult<ClamBCTypeAnalyzer>(m);
 
@@ -811,6 +817,7 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
             }
         }
 
+    DEBUGERR << "ClamBCWriter::run::" << __LINE__ << "><END>\n";
         //return false;
         return PreservedAnalyses::all();
     }
@@ -1166,6 +1173,8 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
         if (BitCastInst *BCI = dyn_cast<BitCastInst>(&I)) {
             if (BCI->isLosslessCast()) {
                 printFixedNumber(OP_BC_GEPZ, 2);
+DEBUG_VALUE(I.getParent()->getParent());
+DEBUG_VALUE((&I));
                 printType(BCI->getOperand(0)->getType(), 0, BCI);
                 printOperand(*BCI, BCI->getOperand(0));
                 printNumber(0, true);

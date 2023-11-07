@@ -192,6 +192,7 @@ class ClamBCRebuild : public PassInfoMixin<ClamBCRebuild>, public InstVisitor<Cl
     PreservedAnalyses run(Module & M, ModuleAnalysisManager & MAM)
     {
         pMod = &M;
+    DEBUGERR << "ClamBCRebuild::run::" << __LINE__ << "><END>\n";
 
         /* Taken from doInitialization.  */
         FMap.clear();
@@ -211,6 +212,8 @@ class ClamBCRebuild : public PassInfoMixin<ClamBCRebuild>, public InstVisitor<Cl
             runOnFunction(*pFunc);
         }
 
+    DEBUG_WHERE;
+    DEBUGERR << "ClamBCRebuild::run::" << __LINE__ << "><END>\n";
         return PreservedAnalyses::none();
         //return true;
     }
