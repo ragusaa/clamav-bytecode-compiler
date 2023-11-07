@@ -48,6 +48,8 @@ class ClamBCConvertIntrinsics : public PassInfoMixin<ClamBCConvertIntrinsics >
         bChanged = false;
         pMod     = &mod;
 
+        DEBUGERR << "REname to convertmemset" << "<END>\n";
+
         for (auto i = pMod->begin(), e = pMod->end(); i != e; i++) {
             Function* pFunc = llvm::cast<Function>(i);
             processFunction(pFunc);

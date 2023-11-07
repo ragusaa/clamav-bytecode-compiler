@@ -55,6 +55,8 @@ PASS_STR+=',default<O3>'
 PASS_STR+=',globalopt'
 PASS_STR+=',clambc-preserve-abis' #remove fake function calls because O3 has already run
 PASS_STR+=',verify'
+PASS_STR+=',clambc-remove-umin'
+PASS_STR+=',verify'
 PASS_STR+=',clambc-remove-pointer-phis'
 #PASS_STR+=',function(clambc-remove-pointer-phis)'
 PASS_STR+=',verify'
@@ -117,6 +119,7 @@ LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcregalloc.so " % INSTALL
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcconvertintrinsics.so " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcremoveicmpsle.so " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcwriter.so " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcremoveumin.so " % INSTALL_DIR
 
 
 #wd = os.getcwd()
