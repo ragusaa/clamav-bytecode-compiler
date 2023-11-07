@@ -45,8 +45,10 @@ namespace
         protected:
             Module *pMod = nullptr;
             bool bChanged = false;
+            llvm::Function * umin = nullptr;
+            const char * const UMIN_NAME = ".umin";
 
-            virtual void gatherUMIN(Function *pFunc, std::vector<CallInst*> & umin) {
+            virtual void gatherUMINCalls(Function *pFunc, std::vector<CallInst*> & umin) {
                 for (auto fi = pFunc->begin(), fe = pFunc->end(); fi != fe; fi++){
                     BasicBlock * pBB = llvm::cast<BasicBlock>(fi);
                     for (auto bi = pBB->begin(), be = pBB->end(); bi != be; bi++){
@@ -71,19 +73,81 @@ namespace
 
             }
 
+            FunctionType * uminType = nullptr;
+            IntegerType * uminArgType = nullptr;
+
+            virtual llvm::IntegerType* getUMINArgType(){
+
+                if (nullptr == uminArgType){
+                    uminArgType = Type::getInt32Ty(pMod->getContext());
+                }
+
+                return uminArgType;
+            }
+
+            virtual llvm::FunctionType * getUMINFunctionType(){
+                if (nullptr == uminType){
+                    IntegerType  * it = getUMINArgType();
+                    uminType = FunctionType::get(it, {it, it}, false);
+                }
+                return uminType;
+            }
+
+            virtual llvm::Function * getUMIN(){
+                if (nullptr == umin){
+                    uint32_t addressSpace = pMod->getDataLayout().getProgramAddressSpace();
+
+                    IntegerType * it = getUMINArgType();
+                    FunctionType * ft = getUMINFunctionType();
+
+                    umin = Function::Create(ft, GlobalValue::InternalLinkage, UMIN_NAME, *pMod);
+                    Value * pLeft = umin->getArg(0);
+                    Value * pRight = umin->getArg(1);
+                    BasicBlock * pEntry = BasicBlock::Create(pMod->getContext(), "entry", umin);
+                    BasicBlock * pLHS = BasicBlock::Create(pMod->getContext(), "left", umin);
+                    BasicBlock * pRHS = BasicBlock::Create(pMod->getContext(), "right", umin);
+                    BasicBlock * pRetBlock = BasicBlock::Create(pMod->getContext(), "ret", umin);
+
+                    //entry  block
+                    AllocaInst * retVar = new AllocaInst(it, addressSpace , "ret", pEntry);
+                    ICmpInst * cmp = new ICmpInst(*pEntry, CmpInst::ICMP_ULT, pLeft, pRight, "icmp");
+                    BranchInst::Create(pLHS, pRHS, cmp,  pEntry);
+
+                    //left < right
+                    new StoreInst (pLeft, retVar, pLHS);
+                    BranchInst::Create(pRetBlock, pLHS);
+
+                    //right >= left
+                    new StoreInst (pRight, retVar, pRHS);
+                    BranchInst::Create(pRetBlock, pRHS);
+
+                    LoadInst * pli = new LoadInst(it, retVar, "load", pRetBlock);
+                    ReturnInst::Create(pMod->getContext(), pli, pRetBlock);
+                }
+
+                return umin;
+            }
+
             virtual void processFunction(Function *pFunc) {
-                vector<CallInst*> umin;
-                gatherUMIN(pFunc, umin);
+                vector<CallInst*> calls;
+                gatherUMINCalls(pFunc, calls);
 
-                for (size_t i = 0; i < umin.size(); i++){
+                for (size_t i = 0; i < calls.size(); i++){
                     bChanged = true;
-                    
+                    CallInst * pci = calls[i];
 
-#if 0
-                    FreezeInst * pfi = umin[i];
-                    pfi->replaceAllUsesWith(pfi->getOperand(0));
-                    pfi->eraseFromParent();
-#endif
+                    Function * umin = getUMIN();
+
+                    BasicBlock * pBlock = pci->getParent();
+
+                    std::vector<Value*> args;
+                    for (size_t i = 0; i < pci->arg_size(); i++){
+                        args.push_back(pci->getArgOperand(i));
+                    }
+                    CallInst * pNew = CallInst::Create(getUMINFunctionType(), umin, args, "ClamBCRemoveUMIN_",  pci);
+                    pci->replaceAllUsesWith(pNew);
+                    pci->eraseFromParent();
+
                 }
             }
 
