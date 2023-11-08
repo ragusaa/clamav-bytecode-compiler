@@ -55,22 +55,13 @@ namespace
                         if (CallInst * pci = llvm::dyn_cast<CallInst>(bi)){
                             Function * pCalled = pci->getCalledFunction();
                             if (pCalled->isIntrinsic()){
-
-
-
-
-                                DEBUG_VALUE(pci);
-                                DEBUG_VALUE(pCalled);
                                 if ("llvm.umin.i32" == pCalled->getName()) {
-
-                                    DEBUG_VALUE(pci);
                                     umin.push_back(pci);
                                 }
                             }
                         }
                     }
                 }
-
             }
 
             FunctionType * uminType = nullptr;
