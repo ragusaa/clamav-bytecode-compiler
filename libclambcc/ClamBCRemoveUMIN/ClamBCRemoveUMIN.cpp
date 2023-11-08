@@ -44,7 +44,6 @@ namespace
     {
         protected:
             Module *pMod = nullptr;
-            bool bChanged = false;
             const char * const UMIN_NAME = ".umin";
 
             FunctionType * uminType = nullptr;
@@ -109,17 +108,13 @@ namespace
                 std::vector<CallInst*> calls;
                 gatherCallsToIntrinsic(pMod, INTRINSIC_NAME, calls);
                 if (calls.size()){
-                    bChanged = true;
-
                     Function * umin = addUMIN();
                     replaceAllCalls(getUMINFunctionType(), umin, calls, "ClamBCRemoveUMIN_");
+
+                    return PreservedAnalyses::none();
                 }
 
-                if (bChanged){
-                    return PreservedAnalyses::none();
-                } else{
-                    return PreservedAnalyses::all();
-                }
+                return PreservedAnalyses::all();
             }
 
     }; // end of struct ClamBCRemoveUMIN
