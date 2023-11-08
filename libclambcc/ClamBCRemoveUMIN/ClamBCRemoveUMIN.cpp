@@ -37,6 +37,57 @@ using namespace std;
 
 namespace
 {
+
+
+    void gatherCallsToIntrinsic(Function *pFunc, const char * const functionName , std::vector<CallInst*> & umin) {
+        for (auto fi = pFunc->begin(), fe = pFunc->end(); fi != fe; fi++){
+            BasicBlock * pBB = llvm::cast<BasicBlock>(fi);
+            for (auto bi = pBB->begin(), be = pBB->end(); bi != be; bi++){
+                if (CallInst * pci = llvm::dyn_cast<CallInst>(bi)){
+                    Function * pCalled = pci->getCalledFunction();
+                    if (pCalled->isIntrinsic()){
+                        if (functionName == pCalled->getName()) {
+                            umin.push_back(pci);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void gatherCallsToIntrinsic(Module *pMod, const char * const functionName , std::vector<CallInst*> & umin) {
+        for (auto i = pMod->begin(), e = pMod->end(); i != e; i++) {
+            Function *pFunc = llvm::cast<Function>(i);
+            if (pFunc->isDeclaration()) {
+                continue;
+            }
+
+            gatherCallsToIntrinsic(pFunc, functionName, umin);
+        }
+    }
+
+    void replaceAllCalls(FunctionType * pFuncType, Function * pFunc,  const std::vector<CallInst*> & calls){
+                DEBUG_NONPOINTER(pFuncType);
+
+        for (size_t i = 0; i < calls.size(); i++){
+            CallInst * pci = calls[i];
+
+            BasicBlock * pBlock = pci->getParent();
+
+            std::vector<Value*> args;
+            for (size_t i = 0; i < pci->arg_size(); i++){
+                args.push_back(pci->getArgOperand(i));
+            }
+            CallInst * pNew = CallInst::Create(pFuncType, pFunc, args, 
+                    "ClamBCRemoveUMIN_",  pci);
+            pci->replaceAllUsesWith(pNew);
+            pci->eraseFromParent();
+
+        }
+
+
+    }
+
     /*
      * Remove umin intrinsic because it's not supported by our runtime.
      */
@@ -45,102 +96,56 @@ namespace
         protected:
             Module *pMod = nullptr;
             bool bChanged = false;
-            llvm::Function * umin = nullptr;
             const char * const UMIN_NAME = ".umin";
 
-            virtual void gatherUMINCalls(Function *pFunc, std::vector<CallInst*> & umin) {
-                for (auto fi = pFunc->begin(), fe = pFunc->end(); fi != fe; fi++){
-                    BasicBlock * pBB = llvm::cast<BasicBlock>(fi);
-                    for (auto bi = pBB->begin(), be = pBB->end(); bi != be; bi++){
-                        if (CallInst * pci = llvm::dyn_cast<CallInst>(bi)){
-                            Function * pCalled = pci->getCalledFunction();
-                            if (pCalled->isIntrinsic()){
-                                if ("llvm.umin.i32" == pCalled->getName()) {
-                                    umin.push_back(pci);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
             FunctionType * uminType = nullptr;
-            IntegerType * uminArgType = nullptr;
 
-            virtual llvm::IntegerType* getUMINArgType(){
-
-                if (nullptr == uminArgType){
-                    uminArgType = Type::getInt32Ty(pMod->getContext());
-                }
-
-                return uminArgType;
+            virtual llvm::IntegerType* addUMINArgType(){
+                return Type::getInt32Ty(pMod->getContext());
             }
 
             virtual llvm::FunctionType * getUMINFunctionType(){
-                if (nullptr == uminType){
-                    IntegerType  * it = getUMINArgType();
-                    uminType = FunctionType::get(it, {it, it}, false);
-                }
-                return uminType;
+                IntegerType  * it = addUMINArgType();
+                return FunctionType::get(it, {it, it}, false);
             }
 
-            virtual llvm::Function * getUMIN(){
-                if (nullptr == umin){
-                    uint32_t addressSpace = pMod->getDataLayout().getProgramAddressSpace();
+            virtual llvm::Function * addUMIN(){
+                uint32_t addressSpace = pMod->getDataLayout().getProgramAddressSpace();
 
-                    IntegerType * it = getUMINArgType();
-                    FunctionType * ft = getUMINFunctionType();
+                IntegerType * it = addUMINArgType();
+                FunctionType * ft = getUMINFunctionType();
+                DEBUG_NONPOINTER(ft);
 
-                    umin = Function::Create(ft, GlobalValue::InternalLinkage, UMIN_NAME, *pMod);
-                    Value * pLeft = umin->getArg(0);
-                    Value * pRight = umin->getArg(1);
-                    BasicBlock * pEntry = BasicBlock::Create(pMod->getContext(), "entry", umin);
-                    BasicBlock * pLHS = BasicBlock::Create(pMod->getContext(), "left", umin);
-                    BasicBlock * pRHS = BasicBlock::Create(pMod->getContext(), "right", umin);
-                    BasicBlock * pRetBlock = BasicBlock::Create(pMod->getContext(), "ret", umin);
+                llvm::Function * umin = Function::Create(ft, GlobalValue::InternalLinkage, UMIN_NAME, *pMod);
+                Value * pLeft = umin->getArg(0);
+                Value * pRight = umin->getArg(1);
+                BasicBlock * pEntry = BasicBlock::Create(pMod->getContext(), "entry", umin);
+                BasicBlock * pLHS = BasicBlock::Create(pMod->getContext(), "left", umin);
+                BasicBlock * pRHS = BasicBlock::Create(pMod->getContext(), "right", umin);
+                BasicBlock * pRetBlock = BasicBlock::Create(pMod->getContext(), "ret", umin);
 
-                    //entry  block
-                    AllocaInst * retVar = new AllocaInst(it, addressSpace , "ret", pEntry);
-                    ICmpInst * cmp = new ICmpInst(*pEntry, CmpInst::ICMP_ULT, pLeft, pRight, "icmp");
-                    BranchInst::Create(pLHS, pRHS, cmp,  pEntry);
+                //entry  block
+                AllocaInst * retVar = new AllocaInst(it, addressSpace , "ret", pEntry);
+                ICmpInst * cmp = new ICmpInst(*pEntry, CmpInst::ICMP_ULT, pLeft, pRight, "icmp");
+                BranchInst::Create(pLHS, pRHS, cmp,  pEntry);
 
-                    //left < right
-                    new StoreInst (pLeft, retVar, pLHS);
-                    BranchInst::Create(pRetBlock, pLHS);
+                //left < right
+                new StoreInst (pLeft, retVar, pLHS);
+                BranchInst::Create(pRetBlock, pLHS);
 
-                    //right >= left
-                    new StoreInst (pRight, retVar, pRHS);
-                    BranchInst::Create(pRetBlock, pRHS);
+                //right >= left
+                new StoreInst (pRight, retVar, pRHS);
+                BranchInst::Create(pRetBlock, pRHS);
 
-                    LoadInst * pli = new LoadInst(it, retVar, "load", pRetBlock);
-                    ReturnInst::Create(pMod->getContext(), pli, pRetBlock);
-                }
-
+                LoadInst * pli = new LoadInst(it, retVar, "load", pRetBlock);
+                ReturnInst::Create(pMod->getContext(), pli, pRetBlock);
                 return umin;
             }
 
-            virtual void processFunction(Function *pFunc) {
-                vector<CallInst*> calls;
-                gatherUMINCalls(pFunc, calls);
-
-                for (size_t i = 0; i < calls.size(); i++){
-                    bChanged = true;
-                    CallInst * pci = calls[i];
-
-                    Function * umin = getUMIN();
-
-                    BasicBlock * pBlock = pci->getParent();
-
-                    std::vector<Value*> args;
-                    for (size_t i = 0; i < pci->arg_size(); i++){
-                        args.push_back(pci->getArgOperand(i));
-                    }
-                    CallInst * pNew = CallInst::Create(getUMINFunctionType(), umin, args, "ClamBCRemoveUMIN_",  pci);
-                    pci->replaceAllUsesWith(pNew);
-                    pci->eraseFromParent();
-
-                }
-            }
+            //virtual void processFunction(Function *pFunc) {
+            //    vector<CallInst*> calls;
+            //    gatherCallsToIntrinsic(pFunc, "llvm.umin.i32", calls);
+            //}
 
         public:
 
@@ -151,14 +156,15 @@ namespace
                 pMod = &m;
 
                 DEBUGERR  << "TODO: ADD umin detection to the validator" << "<END>\n";
+                const char * const  INTRINSIC_NAME = "llvm.umin.i32";
 
-                for (auto i = pMod->begin(), e = pMod->end(); i != e; i++) {
-                    Function *pFunc = llvm::cast<Function>(i);
-                    if (pFunc->isDeclaration()) {
-                        continue;
-                    }
+                std::vector<CallInst*> calls;
+                gatherCallsToIntrinsic(pMod, INTRINSIC_NAME, calls);
+                if (calls.size()){
+                    bChanged = true;
 
-                    processFunction(pFunc);
+                    Function * umin = addUMIN();
+                    replaceAllCalls(getUMINFunctionType(), umin, calls);
                 }
 
                 if (bChanged){
@@ -167,6 +173,7 @@ namespace
                     return PreservedAnalyses::all();
                 }
             }
+
     }; // end of struct ClamBCRemoveUMIN
 
 } // end of anonymous namespace
