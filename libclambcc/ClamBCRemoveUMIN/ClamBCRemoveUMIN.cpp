@@ -89,11 +89,6 @@ namespace
                 return umin;
             }
 
-            //virtual void processFunction(Function *pFunc) {
-            //    vector<CallInst*> calls;
-            //    gatherCallsToIntrinsic(pFunc, "llvm.umin.i32", calls);
-            //}
-
         public:
 
             virtual ~ClamBCRemoveUMIN() {}
