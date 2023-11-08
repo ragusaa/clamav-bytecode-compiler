@@ -66,8 +66,8 @@ namespace
         }
     }
 
-    void replaceAllCalls(FunctionType * pFuncType, Function * pFunc,  const std::vector<CallInst*> & calls){
-                DEBUG_NONPOINTER(pFuncType);
+    void replaceAllCalls(FunctionType * pFuncType, Function * pFunc,
+            const std::vector<CallInst*> & calls){
 
         for (size_t i = 0; i < calls.size(); i++){
             CallInst * pci = calls[i];
@@ -84,8 +84,6 @@ namespace
             pci->eraseFromParent();
 
         }
-
-
     }
 
     /*
@@ -114,7 +112,6 @@ namespace
 
                 IntegerType * it = addUMINArgType();
                 FunctionType * ft = getUMINFunctionType();
-                DEBUG_NONPOINTER(ft);
 
                 llvm::Function * umin = Function::Create(ft, GlobalValue::InternalLinkage, UMIN_NAME, *pMod);
                 Value * pLeft = umin->getArg(0);
