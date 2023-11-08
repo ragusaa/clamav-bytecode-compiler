@@ -37,56 +37,6 @@ using namespace std;
 
 namespace
 {
-#if 0
-
-    void gatherCallsToIntrinsic(Function *pFunc, const char * const functionName , std::vector<CallInst*> & umin) {
-        for (auto fi = pFunc->begin(), fe = pFunc->end(); fi != fe; fi++){
-            BasicBlock * pBB = llvm::cast<BasicBlock>(fi);
-            for (auto bi = pBB->begin(), be = pBB->end(); bi != be; bi++){
-                if (CallInst * pci = llvm::dyn_cast<CallInst>(bi)){
-                    Function * pCalled = pci->getCalledFunction();
-                    if (pCalled->isIntrinsic()){
-                        if (functionName == pCalled->getName()) {
-                            umin.push_back(pci);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    void gatherCallsToIntrinsic(Module *pMod, const char * const functionName , std::vector<CallInst*> & umin) {
-        for (auto i = pMod->begin(), e = pMod->end(); i != e; i++) {
-            Function *pFunc = llvm::cast<Function>(i);
-            if (pFunc->isDeclaration()) {
-                continue;
-            }
-
-            gatherCallsToIntrinsic(pFunc, functionName, umin);
-        }
-    }
-
-    void replaceAllCalls(FunctionType * pFuncType, Function * pFunc,
-            const std::vector<CallInst*> & calls){
-
-        for (size_t i = 0; i < calls.size(); i++){
-            CallInst * pci = calls[i];
-
-            BasicBlock * pBlock = pci->getParent();
-
-            std::vector<Value*> args;
-            for (size_t i = 0; i < pci->arg_size(); i++){
-                args.push_back(pci->getArgOperand(i));
-            }
-            CallInst * pNew = CallInst::Create(pFuncType, pFunc, args, 
-                    "ClamBCRemoveUMIN_",  pci);
-            pci->replaceAllUsesWith(pNew);
-            pci->eraseFromParent();
-
-        }
-    }
-#endif
-
     /*
      * Remove umin intrinsic because it's not supported by our runtime.
      */
