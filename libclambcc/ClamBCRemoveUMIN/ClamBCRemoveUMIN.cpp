@@ -37,7 +37,7 @@ using namespace std;
 
 namespace
 {
-
+#if 0
 
     void gatherCallsToIntrinsic(Function *pFunc, const char * const functionName , std::vector<CallInst*> & umin) {
         for (auto fi = pFunc->begin(), fe = pFunc->end(); fi != fe; fi++){
@@ -85,6 +85,7 @@ namespace
 
         }
     }
+#endif
 
     /*
      * Remove umin intrinsic because it's not supported by our runtime.
@@ -161,7 +162,7 @@ namespace
                     bChanged = true;
 
                     Function * umin = addUMIN();
-                    replaceAllCalls(getUMINFunctionType(), umin, calls);
+                    replaceAllCalls(getUMINFunctionType(), umin, calls, "ClamBCRemoveUMIN_");
                 }
 
                 if (bChanged){

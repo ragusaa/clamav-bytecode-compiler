@@ -51,5 +51,13 @@ llvm::Type * getResultType(llvm::Value * pVal);
 llvm::Type * getPointerElementType(const llvm::Module * const pMod, const llvm::PointerType * const pType) ;
 #endif
 
+void gatherCallsToIntrinsic(llvm::Function *pFunc, const char * const functionName ,
+        std::vector<llvm::CallInst*> & calls);
+
+void gatherCallsToIntrinsic(llvm::Module *pMod, const char * const functionName ,
+        std::vector<llvm::CallInst*> & calls) ;
+
+void replaceAllCalls(llvm::FunctionType * pFuncType, llvm::Function * pFunc,
+        const std::vector<llvm::CallInst*> & calls, const char * const namePrefix);
 
 #endif // CLAMBC_UTILITIES_H_
