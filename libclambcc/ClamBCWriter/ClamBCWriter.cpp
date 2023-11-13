@@ -847,6 +847,7 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 
         for (size_t i = 0; i < geps.size(); i++) {
             GetElementPtrInst *pGep = geps[i];
+            DEBUG_VALUE(pGep->getParent()->getParent());
 
             assert(llvm::isa<PointerType>(pGep->getType()) && "ONLY POINTER TYPES ARE CURRENTLY SUPPORTED");
 
@@ -866,7 +867,10 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 #else
             DEBUG_VALUE(pGep);
             DEBUG_VALUE(pGep->getType());
-            assert (0 && "Figure out what to do here");
+            DEBUG_VALUE(pGep->getResultElementType());
+            DEBUG_VALUE(pType);
+            pType = pGep->getResultElementType();
+//            assert (0 && "Figure out what to do here");
 #endif
 
             if (not pType->isIntegerTy()) {
@@ -880,10 +884,19 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 
             Value *newIndex = BinaryOperator::Create(Instruction::Mul, cMultiplier, index, "ClamBCWriter_fixGEPs", pGep);
 
-            GetElementPtrInst *pNew = nullptr;
+            Instruction *pNew = nullptr;
 
             if (pGep->isInBounds()) {
-                pNew = GetElementPtrInst::Create(nullptr, ci, newIndex, "ClamBCWriter_fixGEPs", pGep);
+                //Constant *cZero = ConstantInt::get(index->getType(), 0);
+                //pNew = GetElementPtrInst::Create(pType, ci, {cZero, newIndex}, "ClamBCWriter_fixGEPs", pGep);
+                Type * i8PtrTy = Type::getInt8PtrTy(pMod->getContext());
+                CastInst * pci = CastInst::CreatePointerCast(ci, i8PtrTy, "ClamBCWriter_ftt_", pGep);
+                pNew = GetElementPtrInst::Create(pType, pci, newIndex, "ClamBCWriter_fixGEPs", pGep);
+                pNew = CastInst::CreatePointerCast(pNew, ci->getType(), "ClamBCWriter_ftt_", pGep);
+DEBUG_VALUE(cMultiplier);
+DEBUG_VALUE(pNew);
+DEBUG_VALUE(pNew->getParent()->getParent());
+exit(11);
             } else {
                 assert(0 && "DON'T THINK THIS CAN HAPPEN");
             }
@@ -894,6 +907,7 @@ class ClamBCWriter : public PassInfoMixin<ClamBCWriter >,  public InstVisitor<Cl
 
             pGep->replaceAllUsesWith(ci);
             pGep->eraseFromParent();
+
         }
     }
 

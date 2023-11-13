@@ -67,7 +67,22 @@ class ClamBCPrepareGEPsForWriter : public PassInfoMixin<ClamBCPrepareGEPsForWrit
     {
         Type *ignType = Type::getInt8Ty(pMod->getContext());
 
-        Type *ptrTy = pgepi->getPointerOperand()->getType()->getPointerElementType();
+        Type *ptrTy = nullptr;
+#if 0
+        ptrTy = pgepi->getPointerOperand()->getType()->getPointerElementType();
+#else
+        DEBUG_VALUE(pgepi);
+
+
+    for (auto i = pgepi->user_begin(), e = pgepi->user_end(); i != e; i++) {
+        Value *val = llvm::cast<Value>(*i);
+        DEBUG_VALUE(val);
+    }
+
+
+
+        assert (0 && "removed");
+#endif
 
         if (ptrTy == ignType) {
             return true;
@@ -232,9 +247,13 @@ class ClamBCPrepareGEPsForWriter : public PassInfoMixin<ClamBCPrepareGEPsForWrit
         llvm::ArrayRef<llvm::Value *> Idxs = {Zero, Zero};
 
         Value *gepiNew = underlyingObject;
+#if 0
         if (gepiNew->getType()->getPointerElementType()->isArrayTy()) {
             gepiNew = GetElementPtrInst::Create(nullptr, gepiNew, Idxs, "processGEPI_2_", pgepi);
         }
+#else
+        DEBUGERR << "Determine if I need something here" << "<END>\n";
+#endif
 
         gepiNew = GetElementPtrInst::Create(nullptr, gepiNew, vCnt, "processGEPI_3_", pgepi);
 
@@ -305,9 +324,13 @@ class ClamBCPrepareGEPsForWriter : public PassInfoMixin<ClamBCPrepareGEPsForWrit
         llvm::ArrayRef<llvm::Value *> Idxs = {Zero, Zero};
 
         Value *gepiNew = underlyingObject;
+#if 0
         if (gepiNew->getType()->getPointerElementType()->isArrayTy()) {
             gepiNew = GetElementPtrInst::Create(nullptr, gepiNew, Idxs, "processGEPI_0_", pgepi);
         }
+#else
+        DEBUGERR << "Determine if I need something here" << "<END>\n";
+#endif
 
         gepiNew = GetElementPtrInst::Create(nullptr, gepiNew, vCnt, "processGEPI_1_", pgepi);
 
@@ -344,7 +367,15 @@ class ClamBCPrepareGEPsForWriter : public PassInfoMixin<ClamBCPrepareGEPsForWrit
                 assert(0 && "ClamBCLowering did not do it's job");
             }
 
-            Type *gepiDstType = pbci->getType()->getPointerElementType();
+            Type *gepiDstType = nullptr;
+#if 0
+            gepiDstType = pbci->getType()->getPointerElementType();
+#else
+            DEBUG_VALUE(pbci);
+            DEBUG_VALUE(pgepi);
+            exit(11);
+
+#endif
             if (StructType *pst = llvm::dyn_cast<StructType>(gepiDstType)) {
                 processGEPI(pgepi, pbci, vPtr, pst);
             } else if (ArrayType *pat = llvm::dyn_cast<ArrayType>(gepiDstType)) {

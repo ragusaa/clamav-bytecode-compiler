@@ -78,18 +78,20 @@ PASS_STR+=',internalize'
 PASS_STR+=',verify'
 PASS_STR+=',clambc-rebuild'
 PASS_STR+=',verify'
-PASS_STR+=',clambc-trace'
+#PASS_STR+=',clambc-trace'
 PASS_STR+=',verify'
-PASS_STR+=',clambc-outline-endianness-calls'
+#PASS_STR+=',clambc-outline-endianness-calls'
 PASS_STR+=',verify'
-PASS_STR+=',clambc-change-malloc-arg-size'
+#PASS_STR+=',clambc-change-malloc-arg-size'
 PASS_STR+=',verify'
-PASS_STR+=',clambc-extend-phis-to-64-bit'
+#PASS_STR+=',clambc-extend-phis-to-64-bit'
 PASS_STR+=',verify'
-PASS_STR+=',clambc-convert-intrinsics'
+#PASS_STR+=',clambc-convert-intrinsics'
 PASS_STR+=',verify'
 PASS_STR+=',globalopt'
-PASS_STR+=',clambc-writer'
+PASS_STR+=',verify'
+#PASS_STR+=',clambc-prepare-geps-for-writer'
+#PASS_STR+=',clambc-writer'
 PASS_STR+=',verify'
 
 
@@ -117,6 +119,7 @@ LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcregalloc.so " % INSTALL
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcconvertintrinsics.so " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcremoveicmpsle.so " % INSTALL_DIR
 LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcwriter.so " % INSTALL_DIR
+LOAD_STR += " --load-pass-plugin %s/install/lib/libclambcpreparegepsforwriter.so " % INSTALL_DIR
 
 
 #wd = os.getcwd()

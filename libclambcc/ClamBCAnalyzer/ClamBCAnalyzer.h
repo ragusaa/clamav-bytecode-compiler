@@ -139,6 +139,16 @@ class ClamBCAnalysis
             DEBUG_VALUE(t);
         }
         assert((I != typeIDs.end()) && "Type ID requested for unknown type");
+#if 1
+        static int first = 1;
+        if (first) {
+            for (auto i = typeIDs.begin(), e = typeIDs.end(); i != e; i++)
+            {
+                DEBUGERR << *(i->first) << "::" << i->second << "<END>\n";
+            }
+            first = 0;
+        }
+#endif
         return I->second;
     }
 
